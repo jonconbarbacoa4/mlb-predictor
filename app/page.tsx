@@ -1,89 +1,79 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { getGamesByDate, getTeamStats } from "@/lib/mlbApi"
+import { useEffect, useState } from 'react';
+import { getGamesByDate, getTeamStats } from '@/lib/mlbApi';
 
-export default function MLBPredictorApp() {
-  const [fecha, setFecha] = useState<string>(() => new Date().toISOString().split("T")[0])
-  const [partidos, setPartidos] = useState<any[]>([])
-  const [loading, setLoading] = useState(false)
+type Game = {
+  gamePk: number;
+  homeTeam: string;
+  homeTeamId: number;
+  awayTeam: string;
+  awayTeamId: number;
+};
+
+export default function Home() {
+  const [games, setGames] = useState<Game[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [scores, setScores] = useState<Record<number, { home: number; away: number }>>({});
+  const [predictions, setPredictions] = useState<Record<number, string>>({});
 
   useEffect(() => {
-    async function fetchPartidos() {
-      setLoading(true)
-      const juegos = await getGamesByDate(fecha)
+    const fetchGames = async () => {
+      const games = await getGamesByDate(selectedDate);
+      setGames(games);
 
-      const partidosConStats = await Promise.all(
-        juegos.map(async (juego: any) => {
-          const homeStats = await getTeamStats(juego.homeTeamId)
-          const awayStats = await getTeamStats(juego.awayTeamId)
+      const scores: Record<number, { home: number; away: number }> = {};
+      const predictions: Record<number, string> = {};
 
-          return {
-            gamePk: juego.gamePk,
-            local: juego.homeTeam,
-            visitante: juego.awayTeam,
-            stats: {
-              [juego.homeTeam]: { ...homeStats, home: 1 },
-              [juego.awayTeam]: { ...awayStats, home: 0 },
-            },
-          }
-        })
-      )
+      for (const game of games) {
+        const homeStats = await getTeamStats(game.homeTeamId);
+        const awayStats = await getTeamStats(game.awayTeamId);
 
-      setPartidos(partidosConStats)
-      setLoading(false)
-    }
+        scores[game.gamePk] = {
+          home: homeStats.rpg,
+          away: awayStats.rpg,
+        };
 
-    fetchPartidos()
-  }, [fecha])
+        predictions[game.gamePk] =
+          homeStats.rpg > awayStats.rpg
+            ? `Gana ${game.homeTeam}`
+            : `Gana ${game.awayTeam}`;
+      }
 
-  function calcularScore(stats: any) {
-    const { rpg, obp, slg } = stats
-    return (rpg || 0) * 0.4 + (obp || 0) * 100 * 0.3 + (slg || 0) * 100 * 0.3
-  }
+      setScores(scores);
+      setPredictions(predictions);
+    };
+
+    fetchGames();
+  }, [selectedDate]);
 
   return (
     <main className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Predicciones MLB (por fecha)</h1>
+      <h1 className="text-xl font-bold mb-4">Predicciones MLB (datos reales)</h1>
 
-      <div className="mb-4">
-        <label className="block font-medium mb-1">Selecciona la fecha:</label>
-        <input
-          type="date"
-          value={fecha}
-          onChange={(e) => setFecha(e.target.value)}
-          className="border rounded px-3 py-1"
-        />
-      </div>
+      <input
+        type="date"
+        className="border p-2 mb-4"
+        value={selectedDate}
+        onChange={(e) => setSelectedDate(e.target.value)}
+      />
 
-      {loading ? (
-        <p>Cargando partidos...</p>
-      ) : partidos.length === 0 ? (
-        <p>No hay partidos programados para esta fecha.</p>
-      ) : (
-        partidos.map((partido, index) => {
-          const { local, visitante, stats } = partido
-          const scoreLocal = calcularScore(stats[local])
-          const scoreVisitante = calcularScore(stats[visitante])
-          const ganador = scoreLocal > scoreVisitante ? local : visitante
-
-          return (
-            <Card key={partido.gamePk || index} className="border shadow-md my-4">
-              <CardContent className="p-4">
-                <h2 className="text-lg font-semibold">
-                  {visitante} @ {local}
-                </h2>
-                <p><strong>Score {local}:</strong> {scoreLocal.toFixed(2)}</p>
-                <p><strong>Score {visitante}:</strong> {scoreVisitante.toFixed(2)}</p>
-                <p className="mt-2 font-bold text-green-700">
-                  Predicción: Gana {ganador}
-                </p>
-              </CardContent>
-            </Card>
-          )
-        })
-      )}
+      {games.map((game) => (
+        <div key={game.gamePk} className="border rounded p-4 mb-4 shadow">
+          <p>
+            <strong>{game.awayTeam} @ {game.homeTeam}</strong>
+          </p>
+          <p>
+            <strong>Score {game.homeTeam}:</strong> {scores[game.gamePk]?.home?.toFixed(2) || '0.00'}
+          </p>
+          <p>
+            <strong>Score {game.awayTeam}:</strong> {scores[game.gamePk]?.away?.toFixed(2) || '0.00'}
+          </p>
+          <p className="text-green-600 font-semibold">
+            Predicción: {predictions[game.gamePk] || 'Cargando...'}
+          </p>
+        </div>
+      ))}
     </main>
-  )
+  );
 }
