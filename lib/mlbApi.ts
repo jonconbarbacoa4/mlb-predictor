@@ -17,18 +17,25 @@ export async function getTodayGames() {
   }));
 }
 
-let statCache: Record<number, any> = {}
+const statsCache: Record<number, any> = {};
 
 export async function getTeamStats(teamId: number) {
-  if (statCache[teamId]) return statCache[teamId];
+  if (statsCache[teamId]) return statsCache[teamId];
 
-  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?season=2024&group=hitting`; // ✅ Este sí responde con datos de MLB
+  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?season=2024&group=hitting`;
   const res = await fetch(url);
-  const data = await res.json();
 
+  if (!res.ok) {
+    console.warn(`❌ No se pudo obtener stats para el equipo ${teamId}`);
+    return {
+      rpg: 0, avg: 0, obp: 0, slg: 0, ops: 0
+    };
+  }
+
+  const data = await res.json();
   const stats = data.stats?.[0]?.splits?.[0]?.stat || {};
 
-  const parsedStats = {
+  const parsed = {
     rpg: parseFloat(stats.runsPerGame) || 0,
     avg: parseFloat(stats.avg) || 0,
     obp: parseFloat(stats.obp) || 0,
@@ -36,6 +43,6 @@ export async function getTeamStats(teamId: number) {
     ops: parseFloat(stats.ops) || 0,
   };
 
-  statCache[teamId] = parsedStats;
-  return parsedStats;
+  statsCache[teamId] = parsed;
+  return parsed;
 }
