@@ -1,69 +1,42 @@
-'use client'
+export async function getTodayGames() {
+  const today = new Date().toISOString().split("T")[0];
+  const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}`;
+  const res = await fetch(url);
+  const data = await res.json();
 
-import { useEffect, useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { getTodayGames, getTeamStats } from "../lib/mlbApi"
+  const games = data.dates?.[0]?.games || [];
 
-export default function MLBPredictorApp() {
-  const [partidos, setPartidos] = useState<any[]>([])
+  return games.map((game: any) => ({
+    gamePk: game.gamePk,
+    homeTeam: game.teams.home.team.name,
+    homeTeamId: game.teams.home.team.id,
+    awayTeam: game.teams.away.team.name,
+    awayTeamId: game.teams.away.team.id,
+  }));
+}
 
-  useEffect(() => {
-    async function fetchPartidos() {
-      const juegos = await getTodayGames()
+let cachedStats: any[] = [];
 
-      const partidosConStats = await Promise.all(
-        juegos.map(async (juego: any) => {
-          const homeStats = await getTeamStats(juego.homeTeamId)
-          const awayStats = await getTeamStats(juego.awayTeamId)
+export async function getTeamStats(teamId: number) {
+  if (cachedStats.length === 0) {
+    const url = 'https://statsapi.mlb.com/api/v1/teams/stats?season=2025&group=hitting';
+    const res = await fetch(url);
+    const data = await res.json();
+    cachedStats = data.stats?.[0]?.splits || [];
 
-          return {
-            gamePk: juego.gamePk,
-            local: juego.homeTeam,
-            visitante: juego.awayTeam,
-            stats: {
-              [juego.homeTeam]: { ...homeStats, home: 1 },
-              [juego.awayTeam]: { ...awayStats, home: 0 },
-            },
-          }
-        })
-      )
-
-      setPartidos(partidosConStats)
-    }
-
-    fetchPartidos()
-  }, [])
-
-  function calcularScore(stats: any) {
-    const { rpg, obp, slg } = stats
-    return (rpg || 0) * 0.4 + (obp || 0) * 100 * 0.3 + (slg || 0) * 100 * 0.3
+    console.log("⚾ Stats cargadas:", cachedStats.length);
+    console.log("✅ IDs disponibles:", cachedStats.map(s => s.team?.id));
   }
 
-  return (
-    <main className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Predicciones MLB (datos reales)</h1>
+  console.log("🔍 Buscando stats para el equipo:", teamId);
 
-      {partidos.map((partido, index) => {
-        const { local, visitante, stats } = partido
-        const scoreLocal = calcularScore(stats[local])
-        const scoreVisitante = calcularScore(stats[visitante])
-        const ganador = scoreLocal > scoreVisitante ? local : visitante
+  const teamStats = cachedStats.find((split: any) => split.team?.id === teamId)?.stat || {};
 
-        return (
-          <Card key={partido.gamePk || index} className="border shadow-md my-4">
-            <CardContent className="p-4">
-              <h2 className="text-lg font-semibold">
-                {visitante} @ {local}
-              </h2>
-              <p><strong>Score {local}:</strong> {scoreLocal.toFixed(2)}</p>
-              <p><strong>Score {visitante}:</strong> {scoreVisitante.toFixed(2)}</p>
-              <p className="mt-2 font-bold text-green-700">
-                Predicción: Gana {ganador}
-              </p>
-            </CardContent>
-          </Card>
-        )
-      })}
-    </main>
-  )
+  return {
+    rpg: parseFloat(teamStats.runsPerGame) || 0,
+    avg: parseFloat(teamStats.avg) || 0,
+    obp: parseFloat(teamStats.obp) || 0,
+    slg: parseFloat(teamStats.slg) || 0,
+    ops: parseFloat(teamStats.ops) || 0,
+  };
 }
