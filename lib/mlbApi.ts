@@ -17,28 +17,34 @@ export async function getTodayGames() {
   }));
 }
 
-let cachedStats: any[] = [];
+let statsMap: Map<number, any> | null = null;
 
 export async function getTeamStats(teamId: number) {
-  if (cachedStats.length === 0) {
+  if (!statsMap) {
     const url = 'https://statsapi.mlb.com/api/v1/teams/stats?season=2025&group=hitting';
     const res = await fetch(url);
     const data = await res.json();
-    cachedStats = data.stats?.[0]?.splits || [];
+    const splits = data.stats?.[0]?.splits || [];
 
-    console.log("⚾ Stats cargadas:", cachedStats.length);
-    console.log("✅ IDs disponibles:", cachedStats.map(s => s.team?.id));
+    statsMap = new Map<number, any>();
+    splits.forEach((split: any) => {
+      const id = split?.team?.id;
+      if (id !== undefined) {
+        statsMap!.set(id, split.stat);
+      }
+    });
+
+    console.log(`✅ Stats cargadas: ${splits.length}`);
+    console.log("🧾 IDs disponibles:", [...statsMap.keys()]);
   }
 
-  console.log("🔍 Buscando stats para el equipo:", teamId);
-
-  const found = cachedStats.find((split: any) => Number(split.team?.id) === Number(teamId));
-
-  if (!found) {
+  const stat = statsMap.get(teamId);
+  if (!stat) {
     console.warn(`❌ No se encontraron stats para teamId: ${teamId}`);
+    return {
+      rpg: 0, avg: 0, obp: 0, slg: 0, ops: 0,
+    };
   }
-
-  const stat = found?.stat || {};
 
   return {
     rpg: parseFloat(stat.runsPerGame) || 0,
