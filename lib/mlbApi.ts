@@ -32,13 +32,19 @@ export async function getTeamStats(teamId: number) {
 
   console.log("🔍 Buscando stats para el equipo:", teamId);
 
-  const teamStats = cachedStats.find((split: any) => split.team?.id === teamId)?.stat || {};
+  const found = cachedStats.find((split: any) => Number(split.team?.id) === Number(teamId));
+
+  if (!found) {
+    console.warn(`❌ No se encontraron stats para teamId: ${teamId}`);
+  }
+
+  const stat = found?.stat || {};
 
   return {
-    rpg: parseFloat(teamStats.runsPerGame) || 0,
-    avg: parseFloat(teamStats.avg) || 0,
-    obp: parseFloat(teamStats.obp) || 0,
-    slg: parseFloat(teamStats.slg) || 0,
-    ops: parseFloat(teamStats.ops) || 0,
+    rpg: parseFloat(stat.runsPerGame) || 0,
+    avg: parseFloat(stat.avg) || 0,
+    obp: parseFloat(stat.obp) || 0,
+    slg: parseFloat(stat.slg) || 0,
+    ops: parseFloat(stat.ops) || 0,
   };
 }
