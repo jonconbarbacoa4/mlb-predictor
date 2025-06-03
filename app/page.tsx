@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { getTodayGames, getTeamStats } from "@/lib/mlbApi"
+import { getTodayGames, getTeamStats } from "../lib/mlbApi"
 
 export default function MLBPredictorApp() {
   const [partidos, setPartidos] = useState<any[]>([])
@@ -16,9 +16,6 @@ export default function MLBPredictorApp() {
           const homeStats = await getTeamStats(juego.homeTeamId)
           const awayStats = await getTeamStats(juego.awayTeamId)
 
-          // Filtrar partidos sin stats para ambos equipos
-          if (!homeStats?.avg || !awayStats?.avg) return null
-
           return {
             gamePk: juego.gamePk,
             local: juego.homeTeam,
@@ -31,7 +28,7 @@ export default function MLBPredictorApp() {
         })
       )
 
-      setPartidos(partidosConStats.filter(Boolean))
+      setPartidos(partidosConStats)
     }
 
     fetchPartidos()
