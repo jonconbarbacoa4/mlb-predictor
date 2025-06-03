@@ -16,7 +16,7 @@ export async function getTodayGames() {
 }
 
 export async function getTeamStats(teamId: number) {
-  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?season=2024&group=hitting`;
+  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?season=2024&group=team`;
   const res = await fetch(url);
   const data = await res.json();
 
