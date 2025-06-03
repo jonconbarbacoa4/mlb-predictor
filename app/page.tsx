@@ -16,7 +16,8 @@ export default function MLBPredictorApp() {
           const homeStats = await getTeamStats(juego.homeTeamId)
           const awayStats = await getTeamStats(juego.awayTeamId)
 
-          if (!homeStats || !awayStats) return null
+          // Filtrar partidos sin stats para ambos equipos
+          if (!homeStats?.avg || !awayStats?.avg) return null
 
           return {
             gamePk: juego.gamePk,
