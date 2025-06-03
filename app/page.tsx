@@ -22,26 +22,26 @@ export default function Home() {
       const games = await getGamesByDate(selectedDate);
       setGames(games);
 
-      const scores: Record<number, { home: number; away: number }> = {};
-      const predictions: Record<number, string> = {};
+      const newScores: Record<number, { home: number; away: number }> = {};
+      const newPredictions: Record<number, string> = {};
 
       for (const game of games) {
         const homeStats = await getTeamStats(game.homeTeamId);
         const awayStats = await getTeamStats(game.awayTeamId);
 
-        scores[game.gamePk] = {
+        newScores[game.gamePk] = {
           home: homeStats.rpg,
           away: awayStats.rpg,
         };
 
-        predictions[game.gamePk] =
+        newPredictions[game.gamePk] =
           homeStats.rpg > awayStats.rpg
             ? `Gana ${game.homeTeam}`
             : `Gana ${game.awayTeam}`;
       }
 
-      setScores(scores);
-      setPredictions(predictions);
+      setScores(newScores);
+      setPredictions(newPredictions);
     };
 
     fetchGames();
