@@ -16,11 +16,14 @@ export async function getTodayGames() {
 }
 
 export async function getTeamStats(teamId: number) {
-  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?season=2024&group=team`;
-  const res = await fetch(url);
-  const data = await res.json();
+  const url = `https://statsapi.mlb.com/api/v1/teams/stats?season=2025&group=hitting`
+  const res = await fetch(url)
+  const data = await res.json()
 
-  const stats = data.stats?.[0]?.splits?.[0]?.stat || {};
+  const allStats = data.stats?.[0]?.splits || []
+  const teamData = allStats.find((entry: any) => entry.team?.id === teamId)
+
+  const stats = teamData?.stat || {}
 
   return {
     rpg: parseFloat(stats.runsPerGame) || 0,
@@ -28,5 +31,5 @@ export async function getTeamStats(teamId: number) {
     obp: parseFloat(stats.obp) || 0,
     slg: parseFloat(stats.slg) || 0,
     ops: parseFloat(stats.ops) || 0,
-  };
+  }
 }
