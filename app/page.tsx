@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { getTodayGames, getTeamStats } from "../lib/mlbApi"
+import { getTodayGames, getTeamStats } from "@/lib/mlbApi"
 
 export default function MLBPredictorApp() {
   const [partidos, setPartidos] = useState<any[]>([])
@@ -16,6 +16,8 @@ export default function MLBPredictorApp() {
           const homeStats = await getTeamStats(juego.homeTeamId)
           const awayStats = await getTeamStats(juego.awayTeamId)
 
+          if (!homeStats || !awayStats) return null
+
           return {
             gamePk: juego.gamePk,
             local: juego.homeTeam,
@@ -28,7 +30,7 @@ export default function MLBPredictorApp() {
         })
       )
 
-      setPartidos(partidosConStats)
+      setPartidos(partidosConStats.filter(Boolean))
     }
 
     fetchPartidos()
