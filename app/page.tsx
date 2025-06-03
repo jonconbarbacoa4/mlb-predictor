@@ -1,64 +1,61 @@
 'use client'
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-
-const partidosIniciales = [
-  {
-    local: "Pirates",
-    visitante: "Astros",
-    stats: {
-      Pirates: { rpg: 3.9, rpga: 4.2, win_pct: 0.45, era: 2.15, home: 1 },
-      Astros: { rpg: 4.5, rpga: 3.8, win_pct: 0.55, era: 5.89, home: 0 },
-    },
-  },
-  {
-    local: "Marlins",
-    visitante: "Rockies",
-    stats: {
-      Marlins: { rpg: 4.1, rpga: 5.1, win_pct: 0.40, era: 8.47, home: 1 },
-      Rockies: { rpg: 3.2, rpga: 5.5, win_pct: 0.17, era: 6.0, home: 0 },
-    },
-  },
-  {
-    local: "Nationals",
-    visitante: "Cubs",
-    stats: {
-      Nationals: { rpg: 4.5, rpga: 5.0, win_pct: 0.45, era: 4.5, home: 1 },
-      Cubs: { rpg: 5.8, rpga: 4.8, win_pct: 0.60, era: 3.6, home: 0 },
-    },
-  },
-]
-
-function calcularScore({ rpg, rpga, win_pct, era, home }) {
-  return (
-    rpg * 0.4 +
-    (1 - rpga / 10) * 0.2 +
-    win_pct * 0.2 +
-    (1 - era / 10) * 0.1 +
-    home * 0.1
-  )
-}
+import { getTodayGames, getTeamStats } from "@/lib/mlbApi"
 
 export default function MLBPredictorApp() {
-  const [partidos] = useState(partidosIniciales)
+  const [partidos, setPartidos] = useState<any[]>([])
+
+  useEffect(() => {
+    async function fetchPartidos() {
+      const juegos = await getTodayGames()
+
+      const partidosConStats = await Promise.all(
+        juegos.map(async (juego: any) => {
+          const homeStats = await getTeamStats(juego.homeTeamId)
+          const awayStats = await getTeamStats(juego.awayTeamId)
+
+          return {
+            local: juego.homeTeam,
+            visitante: juego.awayTeam,
+            stats: {
+              [juego.homeTeam]: { ...homeStats, home: 1 },
+              [juego.awayTeam]: { ...awayStats, home: 0 },
+            },
+          }
+        })
+      )
+
+      setPartidos(partidosConStats)
+    }
+
+    fetchPartidos()
+  }, [])
+
+  function calcularScore(stats: any) {
+    const { rpg, obp, slg } = stats
+    return (rpg || 0) * 0.4 + (obp || 0) * 100 * 0.3 + (slg || 0) * 100 * 0.3
+  }
 
   return (
-    <div className="p-6 grid gap-4 max-w-2xl mx-auto">
-      <h1 className="text-xl font-bold">Predicciones MLB</h1>
-      {partidos.map(({ local, visitante, stats }, index) => {
+    <main className="p-6 max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Predicciones MLB (datos reales)</h1>
+
+      {partidos.map((partido, index) => {
+        const { local, visitante, stats } = partido
         const scoreLocal = calcularScore(stats[local])
         const scoreVisitante = calcularScore(stats[visitante])
         const ganador = scoreLocal > scoreVisitante ? local : visitante
 
         return (
-          <Card key={index} className="border shadow-md">
+          <Card key={index} className="border shadow-md my-4">
             <CardContent className="p-4">
               <h2 className="text-lg font-semibold">
                 {visitante} @ {local}
               </h2>
-              <p className="mt-2"><strong>Score {local}:</strong> {scoreLocal.toFixed(3)}</p>
-              <p><strong>Score {visitante}:</strong> {scoreVisitante.toFixed(3)}</p>
+              <p><strong>Score {local}:</strong> {scoreLocal.toFixed(2)}</p>
+              <p><strong>Score {visitante}:</strong> {scoreVisitante.toFixed(2)}</p>
               <p className="mt-2 font-bold text-green-700">
                 Predicción: Gana {ganador}
               </p>
@@ -66,6 +63,6 @@ export default function MLBPredictorApp() {
           </Card>
         )
       })}
-    </div>
+    </main>
   )
 }
