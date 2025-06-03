@@ -1,14 +1,12 @@
 {
   "compilerOptions": {
-    "target": "ES2017", 
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],"baseUrl": ".",
-"paths": {
-  "@/*": ["./*"]
-},
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "baseUrl": ".",
+    "paths": {
+      "@/lib/*": ["lib/*"],
+      "@/components/*": ["components/*"]
+    },
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -32,7 +30,5 @@
     "**/*.ts",
     "**/*.tsx"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
