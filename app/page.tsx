@@ -1,62 +1,44 @@
 // app/page.tsx
-'use client';
 
-import { useEffect, useState } from 'react';
-import { getTodayGames, getTeamStats } from '../lib/mlbApi';
+import { getTodayGames, getBoxScore } from "@/lib/mlbApi";
 
-interface Game {
-  gamePk: number;
-  homeTeam: string;
-  awayTeam: string;
-  homeTeamId: number;
-  awayTeamId: number;
-  homeScore: number;
-  awayScore: number;
-}
+export default async function Home() {
+  const games = await getTodayGames();
 
-interface Stats {
-  rpg: number;
-  avg: number;
-  obp: number;
-  slg: number;
-  ops: number;
-}
+  const gameStats = await Promise.all(
+    games.map(async (game) => {
+      const score = await getBoxScore(game.gamePk);
+      return {
+        ...game,
+        homeScore: score.homeScore,
+        awayScore: score.awayScore,
+      };
+    })
+  );
 
-export default function Home() {
-  const [games, setGames] = useState<Game[]>([]);
-  const [predictions, setPredictions] = useState<Record<number, string>>({});
-
-  useEffect(() => {
-    async function fetchData() {
-      const games = await getTodayGames();
-      setGames(games);
-
-      const newPredictions: Record<number, string> = {};
-      for (const game of games) {
-        const homeStats: Stats = await getTeamStats(game.homeTeamId);
-        const awayStats: Stats = await getTeamStats(game.awayTeamId);
-
-        const homeScore = homeStats.rpg + homeStats.ops * 10;
-        const awayScore = awayStats.rpg + awayStats.ops * 10;
-
-        newPredictions[game.gamePk] =
-          homeScore > awayScore ? `Gana ${game.homeTeam}` : `Gana ${game.awayTeam}`;
-      }
-      setPredictions(newPredictions);
-    }
-
-    fetchData();
-  }, []);
+  function predictWinner(homeScore: number, awayScore: number, homeTeam: string, awayTeam: string) {
+    if (homeScore > awayScore) return `Gana ${homeTeam}`;
+    if (awayScore > homeScore) return `Gana ${awayTeam}`;
+    return "Empate";
+  }
 
   return (
-    <main style={{ padding: '2rem' }}>
-      <h1>Predicciones MLB (datos reales)</h1>
-      {games.map((game) => (
-        <div key={game.gamePk} style={{ border: '1px solid #ccc', marginBottom: '1rem', padding: '1rem', borderRadius: '8px' }}>
-          <div><strong>{game.awayTeam} @ {game.homeTeam}</strong></div>
-          <div><strong>Score {game.homeTeam}:</strong> {game.homeScore.toFixed(2)}</div>
-          <div><strong>Score {game.awayTeam}:</strong> {game.awayScore.toFixed(2)}</div>
-          <div style={{ marginTop: '0.5rem', color: 'green' }}><strong>Predicción:</strong> {predictions[game.gamePk]}</div>
+    <main className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Predicciones MLB (datos reales)</h1>
+      {gameStats.map((game) => (
+        <div key={game.gamePk} className="mb-4 p-4 border rounded shadow">
+          <p className="font-semibold">
+            {game.awayTeam} @ {game.homeTeam}
+          </p>
+          <p>
+            <strong>Score {game.awayTeam}:</strong> {game.awayScore.toFixed(2)}
+          </p>
+          <p>
+            <strong>Score {game.homeTeam}:</strong> {game.homeScore.toFixed(2)}
+          </p>
+          <p className="text-green-600 font-semibold">
+            Predicción: {predictWinner(game.homeScore, game.awayScore, game.homeTeam, game.awayTeam)}
+          </p>
         </div>
       ))}
     </main>
