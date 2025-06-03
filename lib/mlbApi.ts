@@ -17,29 +17,25 @@ export async function getTodayGames() {
   }));
 }
 
+let statCache: Record<number, any> = {}
+
 export async function getTeamStats(teamId: number) {
-  try {
-    const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?season=2024&group=hitting`;
-    const res = await fetch(url);
-    const data = await res.json();
+  if (statCache[teamId]) return statCache[teamId];
 
-    const stats = data.stats?.[0]?.splits?.[0]?.stat || {};
+  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?season=2024&group=hitting`; // ✅ Este sí responde con datos de MLB
+  const res = await fetch(url);
+  const data = await res.json();
 
-    return {
-      rpg: parseFloat(stats.runsPerGame) || 0,
-      avg: parseFloat(stats.avg) || 0,
-      obp: parseFloat(stats.obp) || 0,
-      slg: parseFloat(stats.slg) || 0,
-      ops: parseFloat(stats.ops) || 0,
-    };
-  } catch (error) {
-    console.error(`❌ Error al obtener stats para teamId: ${teamId}`, error);
-    return {
-      rpg: 0,
-      avg: 0,
-      obp: 0,
-      slg: 0,
-      ops: 0,
-    };
-  }
+  const stats = data.stats?.[0]?.splits?.[0]?.stat || {};
+
+  const parsedStats = {
+    rpg: parseFloat(stats.runsPerGame) || 0,
+    avg: parseFloat(stats.avg) || 0,
+    obp: parseFloat(stats.obp) || 0,
+    slg: parseFloat(stats.slg) || 0,
+    ops: parseFloat(stats.ops) || 0,
+  };
+
+  statCache[teamId] = parsedStats;
+  return parsedStats;
 }
