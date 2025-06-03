@@ -18,17 +18,28 @@ export async function getTodayGames() {
 }
 
 export async function getTeamStats(teamId: number) {
-  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?season=2025&group=hitting`;
-  const res = await fetch(url);
-  const data = await res.json();
+  try {
+    const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?season=2024&group=hitting`;
+    const res = await fetch(url);
+    const data = await res.json();
 
-  const stat = data?.stats?.[0]?.splits?.[0]?.stat || {};
+    const stats = data.stats?.[0]?.splits?.[0]?.stat || {};
 
-  return {
-    rpg: parseFloat(stat.runsPerGame) || 0,
-    avg: parseFloat(stat.avg) || 0,
-    obp: parseFloat(stat.obp) || 0,
-    slg: parseFloat(stat.slg) || 0,
-    ops: parseFloat(stat.ops) || 0,
-  };
+    return {
+      rpg: parseFloat(stats.runsPerGame) || 0,
+      avg: parseFloat(stats.avg) || 0,
+      obp: parseFloat(stats.obp) || 0,
+      slg: parseFloat(stats.slg) || 0,
+      ops: parseFloat(stats.ops) || 0,
+    };
+  } catch (error) {
+    console.error(`❌ Error al obtener stats para teamId: ${teamId}`, error);
+    return {
+      rpg: 0,
+      avg: 0,
+      obp: 0,
+      slg: 0,
+      ops: 0,
+    };
+  }
 }
