@@ -28,15 +28,18 @@ export async function getTeamStats(teamId: number) {
     console.log("✅ IDs disponibles:", cachedStats.map(s => s.team?.id));
   }
 
-  console.log("🔍 Buscando stats para el equipo:", teamId);
+  const split = cachedStats.find((s) => s.team?.id === teamId);
+  if (!split) {
+    console.warn(`⚠️ No se encontró stats para el equipo ${teamId}`);
+  }
 
-  const teamStats = cachedStats.find((split: any) => split.team?.id === teamId)?.stat || {};
+  const stat = split?.stat || {};
 
   return {
-    rpg: parseFloat(teamStats.runsPerGame) || 0,
-    avg: parseFloat(teamStats.avg) || 0,
-    obp: parseFloat(teamStats.obp) || 0,
-    slg: parseFloat(teamStats.slg) || 0,
-    ops: parseFloat(teamStats.ops) || 0,
+    rpg: parseFloat(stat.runsPerGame) || 0,
+    avg: parseFloat(stat.avg) || 0,
+    obp: parseFloat(stat.obp) || 0,
+    slg: parseFloat(stat.slg) || 0,
+    ops: parseFloat(stat.ops) || 0,
   };
 }
