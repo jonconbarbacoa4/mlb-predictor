@@ -1,6 +1,7 @@
-export async function getTodayGames() {
-  const today = new Date().toISOString().split("T")[0];
-  const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}`;
+// lib/mlbApi.ts
+
+export async function getGamesByDate(date: string) {
+  const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${date}`;
   const res = await fetch(url);
   const data = await res.json();
 
@@ -15,13 +16,24 @@ export async function getTodayGames() {
   }));
 }
 
-export async function getBoxScore(gamePk: number) {
-  const url = `https://statsapi.mlb.com/api/v1/game/${gamePk}/boxscore`;
-  const res = await fetch(url);
-  const data = await res.json();
+let cachedStats: any[] = [];
+
+export async function getTeamStats(teamId: number) {
+  if (cachedStats.length === 0) {
+    const url = 'https://statsapi.mlb.com/api/v1/teams/stats?season=2024&group=hitting';
+    const res = await fetch(url);
+    const data = await res.json();
+    cachedStats = data.stats?.[0]?.splits || [];
+  }
+
+  const teamData = cachedStats.find((s) => s.team?.id === teamId);
+  const stat = teamData?.stat || {};
 
   return {
-    homeScore: data.teams.home.teamStats?.batting?.runs || 0,
-    awayScore: data.teams.away.teamStats?.batting?.runs || 0,
+    rpg: parseFloat(stat.runsPerGame) || 0,
+    avg: parseFloat(stat.avg) || 0,
+    obp: parseFloat(stat.obp) || 0,
+    slg: parseFloat(stat.slg) || 0,
+    ops: parseFloat(stat.ops) || 0,
   };
 }
