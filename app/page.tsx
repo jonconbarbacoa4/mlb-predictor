@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getGamesByDate, getTeamStats } from '@/lib/mlbApi.ts';
+import { getGamesByDate, getTeamStats } from '@/lib/mlbApi';
 
 type Game = {
   gamePk: number;
