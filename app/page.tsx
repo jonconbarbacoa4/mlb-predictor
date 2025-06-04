@@ -60,9 +60,22 @@ export default function Home() {
 
       {games.map((game) => (
         <div key={game.gamePk} className="border rounded p-4 mb-4 shadow">
-          <p>
-            <strong>{game.awayTeam} @ {game.homeTeam}</strong>
-          </p>
+          <div className="flex items-center mb-2">
+            <img
+              src={`https://www.mlbstatic.com/team-logos/${game.awayTeamId}.svg`}
+              alt={game.awayTeam}
+              className="w-10 h-10 mr-2"
+            />
+            <span className="font-semibold mr-2">{game.awayTeam}</span>
+            <span className="mx-1">@</span>
+            <img
+              src={`https://www.mlbstatic.com/team-logos/${game.homeTeamId}.svg`}
+              alt={game.homeTeam}
+              className="w-10 h-10 mx-2"
+            />
+            <span className="font-semibold">{game.homeTeam}</span>
+          </div>
+
           <p>
             <strong>Score {game.homeTeam}:</strong> {scores[game.gamePk]?.home?.toFixed(2) || '0.00'}
           </p>
