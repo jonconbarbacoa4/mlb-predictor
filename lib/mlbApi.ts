@@ -1,5 +1,7 @@
 // lib/mlbApi.ts
 
+let cachedStats: any[] = [];
+
 export async function getGamesByDate(date: string) {
   const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${date}`;
   const res = await fetch(url);
@@ -13,10 +15,10 @@ export async function getGamesByDate(date: string) {
     homeTeamId: game.teams.home.team.id,
     awayTeam: game.teams.away.team.name,
     awayTeamId: game.teams.away.team.id,
+    homeScore: game.teams.home.score,
+    awayScore: game.teams.away.score,
   }));
 }
-
-let cachedStats: any[] = [];
 
 export async function getTeamStats(teamId: number) {
   if (cachedStats.length === 0) {
@@ -39,16 +41,12 @@ export async function getTeamStats(teamId: number) {
 }
 
 export async function getLiveScore(gamePk: number) {
-  const url = `https://statsapi.mlb.com/api/v1/game/${gamePk}/linescore`;
+  const url = `https://statsapi.mlb.com/api/v1/game/${gamePk}/boxscore`;
   const res = await fetch(url);
-
-  if (!res.ok) {
-    return { home: 0, away: 0 };
-  }
-
   const data = await res.json();
+
   return {
-    home: data.teams?.home?.runs ?? 0,
-    away: data.teams?.away?.runs ?? 0,
+    home: data.teams.home?.teamStats?.batting?.runs ?? null,
+    away: data.teams.away?.teamStats?.batting?.runs ?? null,
   };
 }
