@@ -6,7 +6,9 @@ import {
   getGamesByDate,
   getTeamStats,
   getLiveScore,
+  getPitcherEra,
 } from '@/lib/mlbApi';
+import { getOffensiveSplits } from '@/lib/splits';
 
 interface Game {
   gamePk: number;
@@ -14,6 +16,8 @@ interface Game {
   homeTeamId: number;
   awayTeam: string;
   awayTeamId: number;
+  homePitcher: string | null;
+  awayPitcher: string | null;
 }
 
 export default function Home() {
@@ -21,46 +25,75 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
-  const [scores, setScores] = useState<Record<number, { home: number; away: number }>>({});
   const [liveScores, setLiveScores] = useState<Record<number, { home: number; away: number }>>({});
   const [predictions, setPredictions] = useState<Record<number, string>>({});
+  const [reasons, setReasons] = useState<Record<number, string>>({});
 
   useEffect(() => {
-    const fetchGames = async () => {
-      const games = await getGamesByDate(selectedDate);
-      setGames(games);
+    const fetchData = async () => {
+      try {
+        const gameList = await getGamesByDate(selectedDate);
+        setGames(gameList);
 
-      const newScores: Record<number, { home: number; away: number }> = {};
-      const newPredictions: Record<number, string> = {};
-      const newLiveScores: Record<number, { home: number; away: number }> = {};
+        const yesterday = new Date(selectedDate);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const prevDate = yesterday.toISOString().split('T')[0];
+        const prevGames = await getGamesByDate(prevDate);
+        const teamsPlayedYesterday = new Set<number>();
+        for (const g of prevGames) {
+          teamsPlayedYesterday.add(g.homeTeamId);
+          teamsPlayedYesterday.add(g.awayTeamId);
+        }
 
-      for (const game of games) {
-        const homeStats = await getTeamStats(game.homeTeamId);
-        const awayStats = await getTeamStats(game.awayTeamId);
+        const newLiveScores: Record<number, { home: number; away: number }> = {};
+        const newPredictions: Record<number, string> = {};
+        const newReasons: Record<number, string> = {};
 
-        newScores[game.gamePk] = {
-          home: homeStats.rpg,
-          away: awayStats.rpg,
-        };
+        const splits = await getOffensiveSplits();
 
-        const live = await getLiveScore(game.gamePk);
-        newLiveScores[game.gamePk] = {
-          home: live.home,
-          away: live.away,
-        };
+        for (const game of gameList) {
+          const [homeStats, awayStats, live, homeEra, awayEra] = await Promise.all([
+            getTeamStats(game.homeTeamId),
+            getTeamStats(game.awayTeamId),
+            getLiveScore(game.gamePk),
+            getPitcherEra(game.homePitcher ?? ''),
+            getPitcherEra(game.awayPitcher ?? ''),
+          ]);
 
-        newPredictions[game.gamePk] =
-          homeStats.rpg > awayStats.rpg
-            ? `Gana ${game.homeTeam}`
-            : `Gana ${game.awayTeam}`;
+          newLiveScores[game.gamePk] = {
+            home: live.home,
+            away: live.away,
+          };
+
+          const homePlayedYesterday = teamsPlayedYesterday.has(game.homeTeamId);
+          const awayPlayedYesterday = teamsPlayedYesterday.has(game.awayTeamId);
+
+          const assumedHomePitcherHand = 'R';
+          const assumedAwayPitcherHand = 'R';
+
+          const homeVs = assumedAwayPitcherHand === 'R' ? 'vsRHP' : 'vsLHP';
+          const awayVs = assumedHomePitcherHand === 'R' ? 'vsRHP' : 'vsLHP';
+
+          const homeOpsVs = splits[game.homeTeamId]?.[homeVs]?.ops ?? 0;
+          const awayOpsVs = splits[game.awayTeamId]?.[awayVs]?.ops ?? 0;
+
+          const prediction = homeOpsVs > awayOpsVs ? `Gana ${game.homeTeam}` : `Gana ${game.awayTeam}`;
+
+          const reason = `🏠 Localía: ${game.homeTeam} ${!homePlayedYesterday ? 'descansado' : 'jugó ayer'} | ERA: ${homeEra} vs ${awayEra} | OPS vs RHP: ${homeOpsVs.toFixed(3)} vs ${awayOpsVs.toFixed(3)}`;
+
+          newPredictions[game.gamePk] = prediction;
+          newReasons[game.gamePk] = reason;
+        }
+
+        setLiveScores(newLiveScores);
+        setPredictions(newPredictions);
+        setReasons(newReasons);
+      } catch (err) {
+        console.error('❌ Error al obtener datos:', err);
       }
-
-      setScores(newScores);
-      setLiveScores(newLiveScores);
-      setPredictions(newPredictions);
     };
 
-    fetchGames();
+    fetchData();
   }, [selectedDate]);
 
   return (
@@ -99,16 +132,16 @@ export default function Home() {
           </div>
 
           <p>
-            <strong>Estadística (rpg):</strong>{' '}
-            {scores[game.gamePk]?.away?.toFixed(2) || '0.00'} -{' '}
-            {scores[game.gamePk]?.home?.toFixed(2) || '0.00'}
-          </p>
-          <p>
             <strong>Marcador en vivo:</strong>{' '}
             {liveScores[game.gamePk]?.away ?? 0} - {liveScores[game.gamePk]?.home ?? 0}
           </p>
+
           <p className="text-green-600 font-semibold">
             Predicción: {predictions[game.gamePk] || 'Cargando...'}
+          </p>
+
+          <p className="text-sm text-gray-600">
+            {reasons[game.gamePk] || 'Calculando razones...'}
           </p>
         </div>
       ))}
