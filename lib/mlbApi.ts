@@ -1,7 +1,6 @@
 import Papa from 'papaparse';
 
 let localStats: Record<number, any> | null = null;
-let localSplits: Record<number, { vsRHP: number; vsLHP: number }> | null = null;
 
 export async function getGamesByDate(date: string) {
   const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${date}`;
@@ -43,6 +42,8 @@ async function loadCsvStats(): Promise<Record<number, any>> {
           obp: parseFloat(row.obp ?? '0'),
           slg: parseFloat(row.slg ?? '0'),
           ops: parseFloat(row.ops ?? '0'),
+          vsRHP: parseFloat(row.vsRHP ?? '0'),
+          vsLHP: parseFloat(row.vsLHP ?? '0'),
         };
       }
     }
@@ -59,7 +60,7 @@ export async function getTeamStats(teamId: number) {
   const stat = stats[teamId];
   if (!stat) {
     console.warn(`⚠️ No se encontró CSV para el equipo ${teamId}`);
-    return { rpg: 0, avg: 0, obp: 0, slg: 0, ops: 0 };
+    return { rpg: 0, avg: 0, obp: 0, slg: 0, ops: 0, vsRHP: 0, vsLHP: 0 };
   }
   return stat;
 }
@@ -131,31 +132,14 @@ export async function getPitcherEra(pitcherName: string): Promise<number | strin
   }
 }
 
-export async function getSplitsVsPitching(): Promise<Record<number, { vsRHP: number; vsLHP: number }>> {
-  if (localSplits) return localSplits;
-
-  try {
-    const res = await fetch('/data/splits_2025.csv');
-    const csvText = await res.text();
-
-    const parsed = Papa.parse(csvText, {
-      header: true,
-      skipEmptyLines: true,
-    });
-
-    const result: Record<number, { vsRHP: number; vsLHP: number }> = {};
-    for (const row of parsed.data as any[]) {
-      const teamId = parseInt(row.teamId);
-      const vsRHP = parseFloat(row.vsRHP || '0');
-      const vsLHP = parseFloat(row.vsLHP || '0');
-      if (!isNaN(teamId)) {
-        result[teamId] = { vsRHP, vsLHP };
-      }
-    }
-    localSplits = result;
-    return result;
-  } catch (error) {
-    console.error('❌ Error al cargar splits CSV:', error);
-    return {};
+// 🔁 NUEVA FUNCIÓN: Predicción ofensiva vs tipo de pitcher
+export async function getPredictedOffense(teamId: number, pitcherHandedness: 'R' | 'L') {
+  const stats = await getTeamStats(teamId);
+  if (pitcherHandedness === 'R') {
+    return stats.vsRHP ?? 0;
+  } else if (pitcherHandedness === 'L') {
+    return stats.vsLHP ?? 0;
+  } else {
+    return stats.ops ?? 0; // fallback
   }
 }

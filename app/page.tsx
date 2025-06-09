@@ -8,7 +8,6 @@ import {
   getLiveScore,
   getPitcherEra,
 } from '@/lib/mlbApi';
-import { getOffensiveSplits } from '@/lib/splits';
 
 interface Game {
   gamePk: number;
@@ -49,8 +48,6 @@ export default function Home() {
         const newPredictions: Record<number, string> = {};
         const newReasons: Record<number, string> = {};
 
-        const splits = await getOffensiveSplits();
-
         for (const game of gameList) {
           const [homeStats, awayStats, live, homeEra, awayEra] = await Promise.all([
             getTeamStats(game.homeTeamId),
@@ -68,18 +65,13 @@ export default function Home() {
           const homePlayedYesterday = teamsPlayedYesterday.has(game.homeTeamId);
           const awayPlayedYesterday = teamsPlayedYesterday.has(game.awayTeamId);
 
-          const assumedHomePitcherHand = 'R';
-          const assumedAwayPitcherHand = 'R';
+          // 🧠 Predicción basada en OPS global (ya cargado desde el CSV)
+          const homeOps = homeStats.ops ?? 0;
+          const awayOps = awayStats.ops ?? 0;
 
-          const homeVs = assumedAwayPitcherHand === 'R' ? 'vsRHP' : 'vsLHP';
-          const awayVs = assumedHomePitcherHand === 'R' ? 'vsRHP' : 'vsLHP';
+          const prediction = homeOps > awayOps ? `Gana ${game.homeTeam}` : `Gana ${game.awayTeam}`;
 
-          const homeOpsVs = splits[game.homeTeamId]?.[homeVs]?.ops ?? 0;
-          const awayOpsVs = splits[game.awayTeamId]?.[awayVs]?.ops ?? 0;
-
-          const prediction = homeOpsVs > awayOpsVs ? `Gana ${game.homeTeam}` : `Gana ${game.awayTeam}`;
-
-          const reason = `🏠 Localía: ${game.homeTeam} ${!homePlayedYesterday ? 'descansado' : 'jugó ayer'} | ERA: ${homeEra} vs ${awayEra} | OPS vs RHP: ${homeOpsVs.toFixed(3)} vs ${awayOpsVs.toFixed(3)}`;
+          const reason = `🏠 Localía: ${game.homeTeam} ${!homePlayedYesterday ? 'descansado' : 'jugó ayer'} | ERA: ${homeEra} vs ${awayEra} | OPS: ${homeOps.toFixed(3)} vs ${awayOps.toFixed(3)}`;
 
           newPredictions[game.gamePk] = prediction;
           newReasons[game.gamePk] = reason;
