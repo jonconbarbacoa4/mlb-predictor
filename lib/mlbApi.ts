@@ -1,4 +1,4 @@
-import Papa from 'papaparse';
+import { teamCities } from './teamCities';
 
 let localStats: Record<number, any> | null = null;
 
