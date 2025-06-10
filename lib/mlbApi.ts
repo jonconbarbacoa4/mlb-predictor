@@ -25,16 +25,19 @@ async function loadCsvStats(): Promise<Record<number, any>> {
   if (localStats) return localStats;
 
   try {
-    const res = await fetch('/data/mlb_stats_2025.csv');
-    const csvText = await res.text();
+    const [res1, res2] = await Promise.all([
+      fetch('/data/mlb_stats_2025.csv'),
+      fetch('/data/batting_teams_2025.csv'),
+    ]);
 
-    const parsed = Papa.parse(csvText, {
-      header: true,
-      skipEmptyLines: true,
-    });
+    const [text1, text2] = await Promise.all([res1.text(), res2.text()]);
+
+    const parsed1 = Papa.parse(text1, { header: true, skipEmptyLines: true });
+    const parsed2 = Papa.parse(text2, { header: true, skipEmptyLines: true });
 
     const stats: Record<number, any> = {};
-    for (const row of parsed.data as any[]) {
+
+    for (const row of parsed1.data as any[]) {
       const teamId = parseInt(row.teamId);
       if (!isNaN(teamId)) {
         stats[teamId] = {
@@ -43,15 +46,23 @@ async function loadCsvStats(): Promise<Record<number, any>> {
           obp: parseFloat(row.obp ?? '0'),
           slg: parseFloat(row.slg ?? '0'),
           ops: parseFloat(row.ops ?? '0'),
-          vsRHP: parseFloat(row.vsRHP ?? '0'),
-          vsLHP: parseFloat(row.vsLHP ?? '0'),
         };
       }
     }
+
+    for (const row of parsed2.data as any[]) {
+      const teamId = parseInt(row.teamId);
+      if (!isNaN(teamId)) {
+        if (!stats[teamId]) stats[teamId] = {};
+        stats[teamId].vsRHP = parseFloat(row.vsRHP ?? '0');
+        stats[teamId].vsLHP = parseFloat(row.vsLHP ?? '0');
+      }
+    }
+
     localStats = stats;
     return stats;
   } catch (error) {
-    console.error('❌ Error al cargar el CSV desde /public/data:', error);
+    console.error('❌ Error al cargar los CSV:', error);
     return {};
   }
 }
@@ -133,7 +144,6 @@ export async function getPitcherEra(pitcherName: string): Promise<number | strin
   }
 }
 
-// 🔁 NUEVA FUNCIÓN: Predicción ofensiva vs tipo de pitcher
 export async function getPredictedOffense(teamId: number, pitcherHandedness: 'R' | 'L') {
   const stats = await getTeamStats(teamId);
   if (pitcherHandedness === 'R') {

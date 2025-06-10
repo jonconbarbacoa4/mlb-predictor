@@ -4,19 +4,19 @@ import path from 'path';
 
 (async () => {
   const url = 'https://baseballsavant.mlb.com/league?view=statcast&nav=hitting&season=2025';
-  const browser = await puppeteer.launch({ headless: true }); // usa true en vez de 'new'
+  const browser = await puppeteer.launch({ headless: false }); // usa false para inspección
   const page = await browser.newPage();
 
   console.log('🌐 Navegando a la página...');
-  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 0 });
+  await page.goto(url, { waitUntil: 'networkidle2', timeout: 0 });
 
-  console.log('⏳ Esperando que cargue el contenedor principal...');
-  await page.waitForSelector('#savantLeaderBoard', { timeout: 60000 });
+  console.log('📷 Capturando página completa...');
+  await page.screenshot({ path: 'debug_batting_full.png', fullPage: true });
 
-  console.log('📷 Tomando captura de pantalla...');
-  await page.screenshot({ path: 'batting_table_debug.png', fullPage: true });
+  console.log('⏳ Esperando que cargue la tabla de datos...');
+  await page.waitForSelector('table', { timeout: 60000 });
 
-  console.log('✅ Tabla visible. Listo para extraer los datos.');
+  console.log('✅ Tabla detectada. Extrayendo datos...');
 
   const data = await page.evaluate(() => {
     const rows = Array.from(document.querySelectorAll('table tbody tr'));
