@@ -1,34 +1,51 @@
-import fs from 'fs';
 import puppeteer from 'puppeteer';
+import fs from 'fs';
+import path from 'path';
 
 (async () => {
   const url = 'https://baseballsavant.mlb.com/league?view=statcast&nav=hitting&season=2025';
-  const outputPath = 'public/data/batting_teams_2025.csv';
-
-  const browser = await puppeteer.launch({ headless: 'new' });
+  const browser = await puppeteer.launch({ headless: true }); // usa true en vez de 'new'
   const page = await browser.newPage();
-  await page.goto(url, { waitUntil: 'networkidle2' });
 
-  // Esperar que cargue la tabla
-  await page.waitForSelector('.rt-table');
+  console.log('🌐 Navegando a la página...');
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 0 });
 
-  const { header, rows } = await page.evaluate(() => {
-    const headerCells = Array.from(document.querySelectorAll('.rt-table .rt-thead.-header .rt-th'));
-    const header = headerCells.map(cell => (cell.textContent || '').trim());
+  console.log('⏳ Esperando que cargue el contenedor principal...');
+  await page.waitForSelector('#savantLeaderBoard', { timeout: 60000 });
 
-    const rowGroups = Array.from(document.querySelectorAll('.rt-tbody .rt-tr-group'));
-    const rows = rowGroups.map(rowGroup => {
-      const cells = rowGroup.querySelectorAll('.rt-td');
-      return Array.from(cells).map(cell => (cell.textContent || '').trim());
-    }).filter(row => row.length > 0);
+  console.log('📷 Tomando captura de pantalla...');
+  await page.screenshot({ path: 'batting_table_debug.png', fullPage: true });
 
-    return { header, rows };
+  console.log('✅ Tabla visible. Listo para extraer los datos.');
+
+  const data = await page.evaluate(() => {
+    const rows = Array.from(document.querySelectorAll('table tbody tr'));
+    return rows.map(row => {
+      const cells = Array.from(row.querySelectorAll('td')).map(td => td.textContent?.trim() || '');
+      return cells;
+    });
   });
 
-  const csv = [header.join(','), ...rows.map(row => row.join(','))].join('\n');
-  fs.mkdirSync('public/data', { recursive: true });
-  fs.writeFileSync(outputPath, csv);
+  const header = ['Team', 'AVG', 'OBP', 'SLG', 'OPS'];
+  const csvRows = [header.join(',')];
 
-  console.log(`✅ Datos de bateo guardados en: ${outputPath}`);
+  data.forEach(row => {
+    const [team, , , , avg, obp, slg, ops] = row;
+    if (team && avg && obp && slg && ops) {
+      csvRows.push([team, avg, obp, slg, ops].join(','));
+    }
+  });
+
+  const dirPath = path.join('public', 'data');
+  const filePath = path.join(dirPath, 'batting_teams_2025.csv');
+
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+
+  fs.writeFileSync(filePath, csvRows.join('\n'));
+
+  console.log(`📁 CSV guardado en: ${filePath}`);
+
   await browser.close();
 })();
