@@ -58,6 +58,12 @@ export default function Home() {
         }
 
         const probablePitchers = await getProbablePitchers();
+        const probablePitcherList = Object.entries(probablePitchers);
+
+        const findPitcher = (name: string | null) => {
+          if (!name) return undefined;
+          return probablePitcherList.find(([key]) => name.includes(key))?.[1];
+        };
 
         const newLiveScores: Record<number, { home: number; away: number }> = {};
         const newPredictions: Record<number, string> = {};
@@ -76,8 +82,8 @@ export default function Home() {
           const homeResult = teamResultsYesterday[game.homeTeamId];
           const awayResult = teamResultsYesterday[game.awayTeamId];
 
-          const homePitcher = probablePitchers[game.homePitcher ?? ''];
-          const awayPitcher = probablePitchers[game.awayPitcher ?? ''];
+          const homePitcher = findPitcher(game.homePitcher);
+          const awayPitcher = findPitcher(game.awayPitcher);
 
           const homeOffense = await getPredictedOffense(game.homeTeamId, awayPitcher?.throws === 'L' ? 'L' : 'R');
           const awayOffense = await getPredictedOffense(game.awayTeamId, homePitcher?.throws === 'L' ? 'L' : 'R');
