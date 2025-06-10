@@ -6,8 +6,7 @@ export async function verifyCsvTeamIds(date: string) {
   const csvIds = Object.keys(csvStats).map(Number);
 
   const games = await getGamesByDate(date);
-
-  console.log('📅 Verificando teamIds de los partidos del día:', date);
+  console.log('🧪 Verificando teamIds de los partidos del día:', date);
 
   for (const game of games) {
     const ids = [

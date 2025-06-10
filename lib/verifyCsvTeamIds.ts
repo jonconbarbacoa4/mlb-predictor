@@ -23,3 +23,17 @@ export async function verifyCsvTeamIds(date: string) {
     });
   }
 }
+
+// Permite ejecutar desde terminal con `npx tsx lib/verifyCsvTeamIds.ts 2025-06-09`
+if (require.main === module) {
+  const dateArg = process.argv[2];
+  if (!dateArg) {
+    console.error('⚠️ Debes pasar una fecha como argumento. Ej: 2025-06-09');
+    process.exit(1);
+  }
+
+  verifyCsvTeamIds(dateArg).catch((err) => {
+    console.error('❌ Error al verificar teamIds:', err);
+    process.exit(1);
+  });
+}
