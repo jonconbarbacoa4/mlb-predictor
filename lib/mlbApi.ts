@@ -2,6 +2,8 @@ import { teamCities } from './teamCities';
 import Papa from 'papaparse';
 
 let localStats: Record<number, any> | null = null;
+let pitcherStats: Record<string, any> | null = null;
+let teamPitchingStats: Record<string, any> | null = null;
 
 export async function getGamesByDate(date: string) {
   const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${date}`;
@@ -75,6 +77,62 @@ export async function getTeamStats(teamId: number) {
     return { rpg: 0, avg: 0, obp: 0, slg: 0, ops: 0, vsRHP: 0, vsLHP: 0 };
   }
   return stat;
+}
+
+export async function getPitchingStatsByTeam(): Promise<Record<string, any>> {
+  if (teamPitchingStats) return teamPitchingStats;
+  try {
+    const res = await fetch('/data/pitching_stats_2025.csv');
+    const text = await res.text();
+    const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+
+    const stats: Record<string, any> = {};
+    for (const row of parsed.data as any[]) {
+      const team = row.Team;
+      if (team) {
+        stats[team] = {
+          era: parseFloat(row.ERA ?? '0'),
+          fip: parseFloat(row.FIP ?? '0'),
+          xera: parseFloat(row.xERA ?? '0'),
+          kPerc: parseFloat(row['K%'] ?? '0'),
+          bbPerc: parseFloat(row['BB%'] ?? '0'),
+        };
+      }
+    }
+    teamPitchingStats = stats;
+    return stats;
+  } catch (error) {
+    console.error('❌ Error al cargar pitching_stats_2025.csv:', error);
+    return {};
+  }
+}
+
+export async function getProbablePitchers(): Promise<Record<string, any>> {
+  if (pitcherStats) return pitcherStats;
+  try {
+    const res = await fetch('/data/probable_pitchers_2025.csv');
+    const text = await res.text();
+    const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+
+    const stats: Record<string, any> = {};
+    for (const row of parsed.data as any[]) {
+      const name = row.Name;
+      if (name) {
+        stats[name] = {
+          team: row.Team,
+          throws: row.Throws,
+          opponent: row.Opponent,
+          era: parseFloat(row.ERA ?? '0'),
+          date: row.Date,
+        };
+      }
+    }
+    pitcherStats = stats;
+    return stats;
+  } catch (error) {
+    console.error('❌ Error al cargar probable_pitchers_2025.csv:', error);
+    return {};
+  }
 }
 
 export async function getLiveScore(gamePk: number) {
