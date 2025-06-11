@@ -83,13 +83,19 @@ export default function Home() {
 
           const prediction = homeOffense > awayOffense ? `Gana ${game.homeTeam}` : `Gana ${game.awayTeam}`;
 
-          const formatAVG = (avg: string | undefined) => avg && avg !== '' ? avg : 'N/A';
+          const formatAVG = (avg: string | undefined) =>
+            avg && avg !== '' ? parseFloat(avg).toFixed(3) : 'N/A';
 
-          const reason = homeOffense > awayOffense
-            ? `${game.homeTeam} tiene mejor OPS (${homeOffense.toFixed(3)}) vs lanzador ${awayPitcher?.throws ?? '?'}, y el abridor rival tiene AVG permitido de ${formatAVG(awayPitcher?.avg)}. ${game.awayTeam} ${awayPlayedYesterday ? `jugó ayer y ${awayResult ?? 'sin resultado'}` : 'descansado'}`
-            : `${game.awayTeam} tiene mejor OPS (${awayOffense.toFixed(3)}) vs lanzador ${homePitcher?.throws ?? '?'}, y el abridor rival tiene AVG permitido de ${formatAVG(homePitcher?.avg)}. ${game.homeTeam} ${homePlayedYesterday ? `jugó ayer y ${homeResult ?? 'sin resultado'}` : 'descansado'}`;
+          const reason =
+            homeOffense > awayOffense
+              ? `${game.homeTeam} tiene mejor OPS (${homeOffense.toFixed(3)}) vs lanzador ${awayPitcher?.throws ?? '?'}, y el abridor rival tiene AVG permitido de ${formatAVG(awayPitcher?.avg)}. ${game.awayTeam} ${awayPlayedYesterday ? `jugó ayer y ${awayResult ?? 'sin resultado'}` : 'descansado'}`
+              : `${game.awayTeam} tiene mejor OPS (${awayOffense.toFixed(3)}) vs lanzador ${homePitcher?.throws ?? '?'}, y el abridor rival tiene AVG permitido de ${formatAVG(homePitcher?.avg)}. ${game.homeTeam} ${homePlayedYesterday ? `jugó ayer y ${homeResult ?? 'sin resultado'}` : 'descansado'}`;
 
-          newLiveScores[game.gamePk] = { home: live.home, away: live.away };
+          newLiveScores[game.gamePk] = {
+            home: live.home,
+            away: live.away,
+          };
+
           newPredictions[game.gamePk] = prediction;
           newReasons[game.gamePk] = reason;
         }
