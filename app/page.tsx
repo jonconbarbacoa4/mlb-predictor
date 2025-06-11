@@ -21,6 +21,15 @@ interface Game {
   awayPitcher: string | null;
 }
 
+function normalizeName(name: string): string {
+  return name
+    .normalize('NFD') // elimina tildes
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-zA-Z\s]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
 export default function Home() {
   const [games, setGames] = useState<Game[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -62,7 +71,8 @@ export default function Home() {
 
         const findPitcher = (name: string | null) => {
           if (!name) return undefined;
-          return probablePitcherList.find(([key]) => name.includes(key))?.[1];
+          const normalizedName = normalizeName(name);
+          return probablePitcherList.find(([key]) => normalizeName(key).includes(normalizedName))?.[1];
         };
 
         const newLiveScores: Record<number, { home: number; away: number }> = {};
