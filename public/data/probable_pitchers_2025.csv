@@ -1,31 +1,31 @@
-Date,Name,Team,Opponent,Throws,ERA
-2025-06-11,Cal Quantrill,Miami Marlins,Pittsburgh Pirates,Right,
-2025-06-11,Bailey Falter,Pittsburgh Pirates,Miami Marlins,Left,
-2025-06-11,Ben Brown,Chicago Cubs,Philadelphia Phillies,Right,
-2025-06-11,Jesús Luzardo,Philadelphia Phillies,Chicago Cubs,Left,
-2025-06-11,Nick Lodolo,Cincinnati Reds,Cleveland Guardians,Left,
-2025-06-11,Logan Allen,Cleveland Guardians,Cincinnati Reds,Left,
+Date,Name,Team,Opponent,Throws,AVG
+2025-06-11,Cal Quantrill,Miami Marlins,Pittsburgh Pirates,Right,.304
+2025-06-11,Bailey Falter,Pittsburgh Pirates,Miami Marlins,Left,.162
+2025-06-11,Ben Brown,Chicago Cubs,Philadelphia Phillies,Right,.500
+2025-06-11,Jesús Luzardo,Philadelphia Phillies,Chicago Cubs,Left,.155
+2025-06-11,Nick Lodolo,Cincinnati Reds,Cleveland Guardians,Left,.385
+2025-06-11,Logan Allen,Cleveland Guardians,Cincinnati Reds,Left,.318
 2025-06-11,Spencer Schwellenbach,Atlanta Braves,Milwaukee Brewers,Right,
 2025-06-11,Chad Patrick,Milwaukee Brewers,Atlanta Braves,Right,
-2025-06-11,Eric Lauer,Toronto Blue Jays,St. Louis Cardinals,Left,
-2025-06-11,Matthew Liberatore,St. Louis Cardinals,Toronto Blue Jays,Left,
-2025-06-11,Bryan Woo,Seattle Mariners,Arizona Diamondbacks,Right,
-2025-06-11,Eduardo Rodriguez,Arizona Diamondbacks,Seattle Mariners,Left,
-2025-06-11,JP Sears,Athletics,Los Angeles Angels,Left,
-2025-06-11,Kyle Hendricks,Los Angeles Angels,Athletics,Right,
-2025-06-11,Justin Wrobleski,Los Angeles Dodgers,San Diego Padres,Left,
+2025-06-11,Eric Lauer,Toronto Blue Jays,St. Louis Cardinals,Left,.273
+2025-06-11,Matthew Liberatore,St. Louis Cardinals,Toronto Blue Jays,Left,.182
+2025-06-11,Bryan Woo,Seattle Mariners,Arizona Diamondbacks,Right,.350
+2025-06-11,Eduardo Rodriguez,Arizona Diamondbacks,Seattle Mariners,Left,.353
+2025-06-11,JP Sears,Athletics,Los Angeles Angels,Left,.250
+2025-06-11,Kyle Hendricks,Los Angeles Angels,Athletics,Right,.214
+2025-06-11,Ben Casparius,Los Angeles Dodgers,San Diego Padres,Right,.000
 2025-06-11,Randy Vásquez,San Diego Padres,Los Angeles Dodgers,Right,
-2025-06-11,Casey Mize,Detroit Tigers,Baltimore Orioles,Right,
-2025-06-11,Zach Eflin,Baltimore Orioles,Detroit Tigers,Right,
-2025-06-11,Jake Irvin,Washington Nationals,New York Mets,Right,
-2025-06-11,David Peterson,New York Mets,Washington Nationals,Left,
-2025-06-11,Zack Littell,Tampa Bay Rays,Boston Red Sox,Right,
-2025-06-11,Walker Buehler,Boston Red Sox,Tampa Bay Rays,Right,
+2025-06-11,Casey Mize,Detroit Tigers,Baltimore Orioles,Right,.341
+2025-06-11,Zach Eflin,Baltimore Orioles,Detroit Tigers,Right,.210
+2025-06-11,Jake Irvin,Washington Nationals,New York Mets,Right,.224
+2025-06-11,David Peterson,New York Mets,Washington Nationals,Left,.265
+2025-06-11,Zack Littell,Tampa Bay Rays,Boston Red Sox,Right,.240
+2025-06-11,Walker Buehler,Boston Red Sox,Tampa Bay Rays,Right,.158
 2025-06-11,Jack Leiter,Texas Rangers,Minnesota Twins,Right,
-2025-06-11,David Festa,Minnesota Twins,Texas Rangers,Right,
-2025-06-11,Clarke Schmidt,New York Yankees,Kansas City Royals,Right,
-2025-06-11,Kris Bubic,Kansas City Royals,New York Yankees,Left,
+2025-06-11,David Festa,Minnesota Twins,Texas Rangers,Right,.353
+2025-06-11,Clarke Schmidt,New York Yankees,Kansas City Royals,Right,.226
+2025-06-11,Kris Bubic,Kansas City Royals,New York Yankees,Left,.313
 2025-06-11,Sean Burke,Chicago White Sox,Houston Astros,Right,
-2025-06-11,Ryan Gusto,Houston Astros,Chicago White Sox,Right,
-2025-06-11,Robbie Ray,San Francisco Giants,Colorado Rockies,Left,
-2025-06-11,Kyle Freeland,Colorado Rockies,San Francisco Giants,Left,
+2025-06-11,Ryan Gusto,Houston Astros,Chicago White Sox,Right,.333
+2025-06-11,Robbie Ray,San Francisco Giants,Colorado Rockies,Left,.185
+2025-06-11,Kyle Freeland,Colorado Rockies,San Francisco Giants,Left,.306
