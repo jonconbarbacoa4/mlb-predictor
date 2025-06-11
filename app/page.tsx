@@ -23,11 +23,16 @@ interface Game {
 
 function normalizeName(name: string): string {
   return name
-    .normalize('NFD') // elimina tildes
+    .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
     .replace(/[^a-zA-Z\s]/g, '')
     .toLowerCase()
     .trim();
+}
+
+function extractLastName(name: string): string {
+  const parts = normalizeName(name).split(' ');
+  return parts[parts.length - 1] || '';
 }
 
 export default function Home() {
@@ -71,8 +76,8 @@ export default function Home() {
 
         const findPitcher = (name: string | null) => {
           if (!name) return undefined;
-          const normalizedName = normalizeName(name);
-          return probablePitcherList.find(([key]) => normalizeName(key).includes(normalizedName))?.[1];
+          const lastName = extractLastName(name);
+          return probablePitcherList.find(([csvName]) => extractLastName(csvName) === lastName)?.[1];
         };
 
         const newLiveScores: Record<number, { home: number; away: number }> = {};
