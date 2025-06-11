@@ -1,50 +1,63 @@
 import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
+import { format } from 'date-fns';
 
 (async () => {
-  const url = 'https://baseballsavant.mlb.com/probable-pitchers';
-  const browser = await puppeteer.launch({ headless: false });
+  console.log('🌐 Navegando a la página...');
+
+  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
+  await page.goto('https://baseballsavant.mlb.com/probable-pitchers', {
+    waitUntil: 'networkidle0',
+  });
 
-  console.log('🌐 Navegando a la página de abridores probables...');
-  await page.goto(url, { waitUntil: 'networkidle2', timeout: 0 });
+  // Espera explícita a que cargue al menos un bloque de jugador
+  await page.waitForSelector('.player-info');
 
-  console.log('📷 Capturando screenshot...');
-  await page.screenshot({ path: 'debug_probables_full.png', fullPage: true });
-
-  console.log('⏳ Esperando la tabla...');
-  await page.waitForSelector('table', { timeout: 60000 });
-
-  console.log('✅ Extrayendo datos...');
   const data = await page.evaluate(() => {
-    const rows = Array.from(document.querySelectorAll('table tbody tr'));
-    return rows.map(row => {
-      const cells = Array.from(row.querySelectorAll('td')).map(td => td.textContent?.trim() || '');
-      return cells;
+    const entries: { Date: string; Name: string; Team: string; Opponent: string; Throws: string; ERA: string }[] = [];
+
+    const gameBlocks = document.querySelectorAll('.mod');
+    const today = new Date();
+    const todayFormatted = `${today.getFullYear()}-${(today.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+
+    gameBlocks.forEach((game) => {
+      const teams = game.querySelector('h2')?.textContent?.split('@').map(t => t.trim()) || [];
+      const playerBlocks = game.querySelectorAll('.player-info');
+
+      playerBlocks.forEach((player, i) => {
+        const name = player.querySelector('h3')?.textContent?.trim() || '';
+        const throws = player.querySelector('.throws')?.textContent?.replace('Throws:', '').trim() || '';
+
+        if (name && teams.length === 2) {
+          entries.push({
+            Date: todayFormatted,
+            Name: name,
+            Team: i === 0 ? teams[0] : teams[1],
+            Opponent: i === 0 ? teams[1] : teams[0],
+            Throws: throws,
+            ERA: '',
+          });
+        }
+      });
     });
+
+    return entries;
   });
-
-  const header = ['Name', 'Team', 'Throws', 'Opponent', 'ERA', 'Date'];
-  const csvRows = [header.join(',')];
-
-  data.forEach(row => {
-    const [name, team, throws, opponent, era, date] = row;
-    if (name && team && throws && opponent && era && date) {
-      csvRows.push([name, team, throws, opponent, era, date].join(','));
-    }
-  });
-
-  const dirPath = path.join('public', 'data');
-  const filePath = path.join(dirPath, 'probable_pitchers_2025.csv');
-
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-
-  fs.writeFileSync(filePath, csvRows.join('\n'));
-
-  console.log(`📁 CSV de abridores guardado en: ${filePath}`);
 
   await browser.close();
+
+  const csvContent = ['Date,Name,Team,Opponent,Throws,ERA']
+    .concat(data.map(p =>
+      [p.Date, p.Name, p.Team, p.Opponent, p.Throws, p.ERA].join(',')
+    ))
+    .join('\n');
+
+  const filePath = path.resolve('public/data/probable_pitchers_2025.csv');
+  fs.writeFileSync(filePath, csvContent, 'utf-8');
+
+  console.log(`✅ CSV generado con ${data.length} pitchers en ${filePath}`);
 })();

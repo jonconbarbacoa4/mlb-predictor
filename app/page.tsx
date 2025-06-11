@@ -6,9 +6,8 @@ import {
   getGamesByDate,
   getTeamStats,
   getLiveScore,
-  getPitcherEra,
-  getProbablePitchers,
-  getPredictedOffense
+  getPredictedOffense,
+  getProbablePitchersByTeam
 } from '@/lib/mlbApi';
 
 interface Game {
@@ -21,21 +20,9 @@ interface Game {
   awayPitcher: string | null;
 }
 
-function normalizeName(name: string): string {
-  return name
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .replace(/[^a-zA-Z\s]/g, '')
-    .toLowerCase()
-    .trim();
-}
-
-function extractLastName(name: string): string {
-  const parts = normalizeName(name).split(' ');
-  return parts[parts.length - 1] || '';
-}
-
 export default function Home() {
+  console.log('🔄 Montando Home');
+
   const [games, setGames] = useState<Game[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
@@ -71,14 +58,7 @@ export default function Home() {
           }
         }
 
-        const probablePitchers = await getProbablePitchers();
-        const probablePitcherList = Object.entries(probablePitchers);
-
-        const findPitcher = (name: string | null) => {
-          if (!name) return undefined;
-          const lastName = extractLastName(name);
-          return probablePitcherList.find(([csvName]) => extractLastName(csvName) === lastName)?.[1];
-        };
+        const probablePitchersByTeam = await getProbablePitchersByTeam(selectedDate);
 
         const newLiveScores: Record<number, { home: number; away: number }> = {};
         const newPredictions: Record<number, string> = {};
@@ -97,8 +77,8 @@ export default function Home() {
           const homeResult = teamResultsYesterday[game.homeTeamId];
           const awayResult = teamResultsYesterday[game.awayTeamId];
 
-          const homePitcher = findPitcher(game.homePitcher);
-          const awayPitcher = findPitcher(game.awayPitcher);
+          const homePitcher = probablePitchersByTeam[game.homeTeam];
+          const awayPitcher = probablePitchersByTeam[game.awayTeam];
 
           const homeOffense = await getPredictedOffense(game.homeTeamId, awayPitcher?.throws === 'L' ? 'L' : 'R');
           const awayOffense = await getPredictedOffense(game.awayTeamId, homePitcher?.throws === 'L' ? 'L' : 'R');
