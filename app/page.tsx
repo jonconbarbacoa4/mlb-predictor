@@ -88,8 +88,8 @@ export default function Home() {
           const formatAVG = (avg: string | undefined) => avg && avg !== '' ? avg : 'N/A';
 
           const reason = homeOffense > awayOffense
-            ? `${game.homeTeam} tiene mejor OPS (${homeOffense.toFixed(3)}) vs lanzador ${awayPitcher?.throws ?? '?'}, y el abridor rival tiene AVG permitido de ${formatAVG(awayPitcher?.era)}. ${game.awayTeam} ${awayPlayedYesterday ? `jugó ayer y ${awayResult ?? 'sin resultado'}` : 'descansado'}`
-            : `${game.awayTeam} tiene mejor OPS (${awayOffense.toFixed(3)}) vs lanzador ${homePitcher?.throws ?? '?'}, y el abridor rival tiene AVG permitido de ${formatAVG(homePitcher?.era)}. ${game.homeTeam} ${homePlayedYesterday ? `jugó ayer y ${homeResult ?? 'sin resultado'}` : 'descansado'}`;
+            ? `${game.homeTeam} tiene mejor OPS (${homeOffense.toFixed(3)}) vs lanzador ${awayPitcher?.throws ?? '?'}, y el abridor rival tiene AVG permitido de ${formatAVG(awayPitcher?.avg)}. ${game.awayTeam} ${awayPlayedYesterday ? `jugó ayer y ${awayResult ?? 'sin resultado'}` : 'descansado'}`
+            : `${game.awayTeam} tiene mejor OPS (${awayOffense.toFixed(3)}) vs lanzador ${homePitcher?.throws ?? '?'}, y el abridor rival tiene AVG permitido de ${formatAVG(homePitcher?.avg)}. ${game.homeTeam} ${homePlayedYesterday ? `jugó ayer y ${homeResult ?? 'sin resultado'}` : 'descansado'}`;
 
           newLiveScores[game.gamePk] = {
             home: live.home,
