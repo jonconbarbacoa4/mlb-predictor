@@ -135,6 +135,30 @@ export async function getProbablePitchers(): Promise<Record<string, any>> {
   }
 }
 
+export async function getProbablePitchersByTeam(date: string): Promise<Record<string, { name: string; throws: string; era: string }>> {
+  try {
+    const res = await fetch('/data/probable_pitchers_2025.csv');
+    const text = await res.text();
+    const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+
+    const pitchers: Record<string, { name: string; throws: string; era: string }> = {};
+    for (const row of parsed.data as any[]) {
+      if (row.Date === date) {
+        pitchers[row.Team] = {
+          name: row.Name,
+          throws: row.Throws,
+          era: row.ERA,
+        };
+      }
+    }
+
+    return pitchers;
+  } catch (error) {
+    console.error('❌ Error al cargar probable_pitchers_2025.csv:', error);
+    return {};
+  }
+}
+
 export async function getLiveScore(gamePk: number) {
   try {
     const res = await fetch(`https://statsapi.mlb.com/api/v1/game/${gamePk}/linescore`);
