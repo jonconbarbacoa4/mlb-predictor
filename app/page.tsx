@@ -21,8 +21,6 @@ interface Game {
 }
 
 export default function Home() {
-  console.log('🔄 Montando Home');
-
   const [games, setGames] = useState<Game[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
@@ -91,11 +89,7 @@ export default function Home() {
             ? `${game.homeTeam} tiene mejor OPS (${homeOffense.toFixed(3)}) vs lanzador ${awayPitcher?.throws ?? '?'}, y el abridor rival tiene AVG permitido de ${formatAVG(awayPitcher?.avg)}. ${game.awayTeam} ${awayPlayedYesterday ? `jugó ayer y ${awayResult ?? 'sin resultado'}` : 'descansado'}`
             : `${game.awayTeam} tiene mejor OPS (${awayOffense.toFixed(3)}) vs lanzador ${homePitcher?.throws ?? '?'}, y el abridor rival tiene AVG permitido de ${formatAVG(homePitcher?.avg)}. ${game.homeTeam} ${homePlayedYesterday ? `jugó ayer y ${homeResult ?? 'sin resultado'}` : 'descansado'}`;
 
-          newLiveScores[game.gamePk] = {
-            home: live.home,
-            away: live.away,
-          };
-
+          newLiveScores[game.gamePk] = { home: live.home, away: live.away };
           newPredictions[game.gamePk] = prediction;
           newReasons[game.gamePk] = reason;
         }
