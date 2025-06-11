@@ -6,6 +6,7 @@ import {
   getGamesByDate,
   getTeamStats,
   getLiveScore,
+  getProbablePitchersByTeam
 } from '@/lib/mlbApi';
 
 interface Game {
@@ -54,6 +55,8 @@ export default function Home() {
           }
         }
 
+        const probablePitchersByTeam = await getProbablePitchersByTeam(selectedDate);
+
         const newLiveScores: Record<number, { home: number; away: number }> = {};
         const newPredictions: Record<number, string> = {};
         const newReasons: Record<number, string> = {};
@@ -62,16 +65,22 @@ export default function Home() {
           const [homeStats, awayStats, live] = await Promise.all([
             getTeamStats(game.homeTeamId),
             getTeamStats(game.awayTeamId),
-            getLiveScore(game.gamePk),
+            getLiveScore(game.gamePk)
           ]);
 
-          const prediction = homeStats.ops > awayStats.ops
-            ? `Gana ${game.homeTeam}`
-            : `Gana ${game.awayTeam}`;
+          const homePlayedYesterday = teamsPlayedYesterday.has(game.homeTeamId);
+          const awayPlayedYesterday = teamsPlayedYesterday.has(game.awayTeamId);
 
-          const reason = homeStats.ops > awayStats.ops
-            ? `${game.homeTeam} tiene mejor OPS (${homeStats.ops.toFixed(3)}) que ${game.awayTeam} (${awayStats.ops.toFixed(3)})`
-            : `${game.awayTeam} tiene mejor OPS (${awayStats.ops.toFixed(3)}) que ${game.homeTeam} (${homeStats.ops.toFixed(3)})`;
+          const homeResult = teamResultsYesterday[game.homeTeamId];
+          const awayResult = teamResultsYesterday[game.awayTeamId];
+
+          const homeOPS = homeStats.ops ?? 0;
+          const awayOPS = awayStats.ops ?? 0;
+
+          const prediction = homeOPS > awayOPS ? `Gana ${game.homeTeam}` : `Gana ${game.awayTeam}`;
+          const reason = homeOPS > awayOPS
+            ? `${game.homeTeam} tiene mejor OPS (${homeOPS.toFixed(3)}) que ${game.awayTeam} (${awayOPS.toFixed(3)})`
+            : `${game.awayTeam} tiene mejor OPS (${awayOPS.toFixed(3)}) que ${game.homeTeam} (${homeOPS.toFixed(3)})`;
 
           newLiveScores[game.gamePk] = {
             home: live.home,

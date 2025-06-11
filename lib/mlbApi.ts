@@ -54,9 +54,9 @@ async function loadCsvStats(): Promise<Record<number, any>> {
 
 export async function getTeamStats(teamId: number) {
   const stats = await loadCsvStats();
-  const stat = stats[parseInt(String(teamId))];
+  const stat = stats[teamId];
   if (!stat) {
-    console.warn(`⚠️ No se encontró OPS para el equipo ${teamId}`);
+    console.warn(`⚠️ No se encontró CSV para el equipo ${teamId}`);
     return { rpg: 0, avg: 0, obp: 0, slg: 0, ops: 0 };
   }
   return stat;
