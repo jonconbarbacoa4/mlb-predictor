@@ -22,12 +22,11 @@ interface Game {
 
 export default function Home() {
   const [games, setGames] = useState<Game[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  );
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [liveScores, setLiveScores] = useState<Record<number, { home: number; away: number }>>({});
   const [predictions, setPredictions] = useState<Record<number, string>>({});
   const [reasons, setReasons] = useState<Record<number, string>>({});
+  const [opsValues, setOpsValues] = useState<Record<number, { home: number; away: number }>>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,6 +60,7 @@ export default function Home() {
         const newLiveScores: Record<number, { home: number; away: number }> = {};
         const newPredictions: Record<number, string> = {};
         const newReasons: Record<number, string> = {};
+        const newOpsValues: Record<number, { home: number; away: number }> = {};
 
         for (const game of gameList) {
           const [homeStats, awayStats, live] = await Promise.all([
@@ -71,7 +71,6 @@ export default function Home() {
 
           const homePlayedYesterday = teamsPlayedYesterday.has(game.homeTeamId);
           const awayPlayedYesterday = teamsPlayedYesterday.has(game.awayTeamId);
-
           const homeResult = teamResultsYesterday[game.homeTeamId];
           const awayResult = teamResultsYesterday[game.awayTeamId];
 
@@ -91,18 +90,16 @@ export default function Home() {
               ? `${game.homeTeam} tiene mejor OPS (${homeOffense.toFixed(3)}) vs lanzador ${awayPitcher?.throws ?? '?'}, y el abridor rival tiene AVG permitido de ${formatAVG(awayPitcher?.avg)}. ${game.awayTeam} ${awayPlayedYesterday ? `jugó ayer y ${awayResult ?? 'sin resultado'}` : 'descansado'}`
               : `${game.awayTeam} tiene mejor OPS (${awayOffense.toFixed(3)}) vs lanzador ${homePitcher?.throws ?? '?'}, y el abridor rival tiene AVG permitido de ${formatAVG(homePitcher?.avg)}. ${game.homeTeam} ${homePlayedYesterday ? `jugó ayer y ${homeResult ?? 'sin resultado'}` : 'descansado'}`;
 
-          newLiveScores[game.gamePk] = {
-            home: live.home,
-            away: live.away,
-          };
-
+          newLiveScores[game.gamePk] = { home: live.home, away: live.away };
           newPredictions[game.gamePk] = prediction;
           newReasons[game.gamePk] = reason;
+          newOpsValues[game.gamePk] = { home: homeOffense, away: awayOffense };
         }
 
         setLiveScores(newLiveScores);
         setPredictions(newPredictions);
         setReasons(newReasons);
+        setOpsValues(newOpsValues);
       } catch (err) {
         console.error('❌ Error al obtener datos:', err);
       }
@@ -149,6 +146,10 @@ export default function Home() {
           <p>
             <strong>Marcador en vivo:</strong>{' '}
             {liveScores[game.gamePk]?.away ?? 0} - {liveScores[game.gamePk]?.home ?? 0}
+          </p>
+
+          <p className="text-sm text-gray-700">
+            OPS estimado: {game.awayTeam} ({opsValues[game.gamePk]?.away?.toFixed(3) ?? '...'}), {game.homeTeam} ({opsValues[game.gamePk]?.home?.toFixed(3) ?? '...'})
           </p>
 
           <p className="text-green-600 font-semibold">
