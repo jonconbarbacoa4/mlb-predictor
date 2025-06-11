@@ -1,13 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import {
   getGamesByDate,
   getTeamStats,
   getLiveScore,
-  getProbablePitchersByTeam,
-} from "@/lib/mlbApi";
+} from '@/lib/mlbApi';
 
 interface Game {
   gamePk: number;
@@ -22,11 +21,9 @@ interface Game {
 export default function Home() {
   const [games, setGames] = useState<Game[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split('T')[0]
   );
-  const [liveScores, setLiveScores] = useState<
-    Record<number, { home: number; away: number }>
-  >({});
+  const [liveScores, setLiveScores] = useState<Record<number, { home: number; away: number }>>({});
   const [predictions, setPredictions] = useState<Record<number, string>>({});
   const [reasons, setReasons] = useState<Record<number, string>>({});
 
@@ -38,10 +35,10 @@ export default function Home() {
 
         const yesterday = new Date(selectedDate);
         yesterday.setDate(yesterday.getDate() - 1);
-        const prevDate = yesterday.toISOString().split("T")[0];
+        const prevDate = yesterday.toISOString().split('T')[0];
         const prevGames = await getGamesByDate(prevDate);
         const teamsPlayedYesterday = new Set<number>();
-        const teamResultsYesterday: Record<number, "ganó" | "perdió"> = {};
+        const teamResultsYesterday: Record<number, 'ganó' | 'perdió'> = {};
 
         for (const g of prevGames) {
           teamsPlayedYesterday.add(g.homeTeamId);
@@ -49,17 +46,13 @@ export default function Home() {
 
           const score = await getLiveScore(g.gamePk);
           if (score.home > score.away) {
-            teamResultsYesterday[g.homeTeamId] = "ganó";
-            teamResultsYesterday[g.awayTeamId] = "perdió";
+            teamResultsYesterday[g.homeTeamId] = 'ganó';
+            teamResultsYesterday[g.awayTeamId] = 'perdió';
           } else if (score.away > score.home) {
-            teamResultsYesterday[g.awayTeamId] = "ganó";
-            teamResultsYesterday[g.homeTeamId] = "perdió";
+            teamResultsYesterday[g.awayTeamId] = 'ganó';
+            teamResultsYesterday[g.homeTeamId] = 'perdió';
           }
         }
-
-        const probablePitchersByTeam = await getProbablePitchersByTeam(
-          selectedDate
-        );
 
         const newLiveScores: Record<number, { home: number; away: number }> = {};
         const newPredictions: Record<number, string> = {};
@@ -72,29 +65,13 @@ export default function Home() {
             getLiveScore(game.gamePk),
           ]);
 
-          const homePlayedYesterday = teamsPlayedYesterday.has(
-            game.homeTeamId
-          );
-          const awayPlayedYesterday = teamsPlayedYesterday.has(
-            game.awayTeamId
-          );
+          const prediction = homeStats.ops > awayStats.ops
+            ? `Gana ${game.homeTeam}`
+            : `Gana ${game.awayTeam}`;
 
-          const homeResult = teamResultsYesterday[game.homeTeamId];
-          const awayResult = teamResultsYesterday[game.awayTeamId];
-
-          const prediction =
-            homeStats.ops > awayStats.ops
-              ? `Gana ${game.homeTeam}`
-              : `Gana ${game.awayTeam}`;
-
-          const reason =
-            homeStats.ops > awayStats.ops
-              ? `${game.homeTeam} tiene mejor OPS (${homeStats.ops.toFixed(
-                  3
-                )}) que ${game.awayTeam} (${awayStats.ops.toFixed(3)})`
-              : `${game.awayTeam} tiene mejor OPS (${awayStats.ops.toFixed(
-                  3
-                )}) que ${game.homeTeam} (${homeStats.ops.toFixed(3)})`;
+          const reason = homeStats.ops > awayStats.ops
+            ? `${game.homeTeam} tiene mejor OPS (${homeStats.ops.toFixed(3)}) que ${game.awayTeam} (${awayStats.ops.toFixed(3)})`
+            : `${game.awayTeam} tiene mejor OPS (${awayStats.ops.toFixed(3)}) que ${game.homeTeam} (${homeStats.ops.toFixed(3)})`;
 
           newLiveScores[game.gamePk] = {
             home: live.home,
@@ -109,7 +86,7 @@ export default function Home() {
         setPredictions(newPredictions);
         setReasons(newReasons);
       } catch (err) {
-        console.error("❌ Error al obtener datos:", err);
+        console.error('❌ Error al obtener datos:', err);
       }
     };
 
@@ -152,17 +129,16 @@ export default function Home() {
           </div>
 
           <p>
-            <strong>Marcador en vivo:</strong>{" "}
-            {liveScores[game.gamePk]?.away ?? 0} - {" "}
-            {liveScores[game.gamePk]?.home ?? 0}
+            <strong>Marcador en vivo:</strong>{' '}
+            {liveScores[game.gamePk]?.away ?? 0} - {liveScores[game.gamePk]?.home ?? 0}
           </p>
 
           <p className="text-green-600 font-semibold">
-            Predicción: {predictions[game.gamePk] || "Cargando..."}
+            Predicción: {predictions[game.gamePk] || 'Cargando...'}
           </p>
 
           <p className="text-sm text-gray-600">
-            {reasons[game.gamePk] || "Calculando razones..."}
+            {reasons[game.gamePk] || 'Calculando razones...'}
           </p>
         </div>
       ))}

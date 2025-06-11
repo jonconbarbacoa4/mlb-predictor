@@ -3,7 +3,6 @@ import Papa from 'papaparse';
 
 let localStats: Record<number, any> | null = null;
 let pitcherStats: Record<string, any> | null = null;
-let teamPitchingStats: Record<string, any> | null = null;
 
 export async function getGamesByDate(date: string) {
   const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${date}`;
@@ -27,19 +26,12 @@ async function loadCsvStats(): Promise<Record<number, any>> {
   if (localStats) return localStats;
 
   try {
-    const [res1, res2] = await Promise.all([
-      fetch('/data/mlb_stats_2025.csv'),
-      fetch('/data/batting_teams_2025.csv'),
-    ]);
-
-    const [text1, text2] = await Promise.all([res1.text(), res2.text()]);
-
-    const parsed1 = Papa.parse(text1, { header: true, skipEmptyLines: true });
-    const parsed2 = Papa.parse(text2, { header: true, skipEmptyLines: true });
+    const res = await fetch('/data/mlb_stats_2025.csv');
+    const text = await res.text();
+    const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
 
     const stats: Record<number, any> = {};
-
-    for (const row of parsed1.data as any[]) {
+    for (const row of parsed.data as any[]) {
       const teamId = parseInt(row.teamId);
       if (!isNaN(teamId)) {
         stats[teamId] = {
@@ -52,34 +44,21 @@ async function loadCsvStats(): Promise<Record<number, any>> {
       }
     }
 
-    for (const row of parsed2.data as any[]) {
-      const teamId = parseInt(row.teamId);
-      if (!isNaN(teamId)) {
-        if (!stats[teamId]) stats[teamId] = {};
-        stats[teamId].vsRHP = parseFloat(row.vsRHP ?? '0');
-        stats[teamId].vsLHP = parseFloat(row.vsLHP ?? '0');
-      }
-    }
-
     localStats = stats;
     return stats;
   } catch (error) {
-    console.error('❌ Error al cargar los CSV:', error);
+    console.error('❌ Error al cargar mlb_stats_2025.csv:', error);
     return {};
   }
 }
 
 export async function getTeamStats(teamId: number) {
   const stats = await loadCsvStats();
-  const stat = stats[teamId];
-
-  console.log('📊 Buscando teamId:', teamId);
+  const stat = stats[parseInt(String(teamId))];
   if (!stat) {
-    console.warn(`⚠️ No se encontró CSV para el equipo ${teamId}`);
-    return { rpg: 0, avg: 0, obp: 0, slg: 0, ops: 0, vsRHP: 0, vsLHP: 0 };
+    console.warn(`⚠️ No se encontró OPS para el equipo ${teamId}`);
+    return { rpg: 0, avg: 0, obp: 0, slg: 0, ops: 0 };
   }
-
-  console.log('✅ Stats encontradas para', teamId, ':', stat);
   return stat;
 }
 
@@ -123,9 +102,9 @@ export async function getLiveScore(gamePk: number) {
 export async function getPredictedOffense(teamId: number, pitcherHandedness: 'R' | 'L') {
   const stats = await getTeamStats(teamId);
   if (pitcherHandedness === 'R') {
-    return stats.vsRHP ?? 0;
+    return stats.vsRHP ?? stats.ops ?? 0;
   } else if (pitcherHandedness === 'L') {
-    return stats.vsLHP ?? 0;
+    return stats.vsLHP ?? stats.ops ?? 0;
   } else {
     return stats.ops ?? 0;
   }
