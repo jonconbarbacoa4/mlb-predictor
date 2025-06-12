@@ -66,3 +66,13 @@ export async function getLiveScore(gamePk: number) {
     return { home: 0, away: 0 };
   }
 }
+export async function getPredictedOffense(teamId: number, pitcherHandedness: 'R' | 'L') {
+  const stats = await getTeamStats(teamId);
+  if (pitcherHandedness === 'R') {
+    return stats.vsRHP ?? 0;
+  } else if (pitcherHandedness === 'L') {
+    return stats.vsLHP ?? 0;
+  } else {
+    return stats.ops ?? 0;
+  }
+}
