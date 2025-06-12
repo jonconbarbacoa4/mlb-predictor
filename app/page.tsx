@@ -6,6 +6,7 @@ import {
   getGamesByDate,
   getTeamStats,
   getLiveScore,
+  getPredictedOffense,
   getProbablePitchersByTeam
 } from '@/lib/mlbApi';
 
@@ -74,13 +75,20 @@ export default function Home() {
           const homeResult = teamResultsYesterday[game.homeTeamId];
           const awayResult = teamResultsYesterday[game.awayTeamId];
 
-          const homeOPS = homeStats.ops ?? 0;
-          const awayOPS = awayStats.ops ?? 0;
+          const homePitcher = probablePitchersByTeam[game.homeTeam];
+          const awayPitcher = probablePitchersByTeam[game.awayTeam];
 
-          const prediction = homeOPS > awayOPS ? `Gana ${game.homeTeam}` : `Gana ${game.awayTeam}`;
-          const reason = homeOPS > awayOPS
-            ? `${game.homeTeam} tiene mejor OPS (${homeOPS.toFixed(3)}) que ${game.awayTeam} (${awayOPS.toFixed(3)})`
-            : `${game.awayTeam} tiene mejor OPS (${awayOPS.toFixed(3)}) que ${game.homeTeam} (${homeOPS.toFixed(3)})`;
+          const homeOffense = await getPredictedOffense(game.homeTeamId, awayPitcher?.throws === 'L' ? 'L' : 'R');
+          const awayOffense = await getPredictedOffense(game.awayTeamId, homePitcher?.throws === 'L' ? 'L' : 'R');
+
+          const prediction = homeOffense > awayOffense ? `Gana ${game.homeTeam}` : `Gana ${game.awayTeam}`;
+
+          const format = (val: number | undefined) => (val ? val.toFixed(3) : 'N/A');
+
+          const reason =
+            homeOffense > awayOffense
+              ? `${game.homeTeam} tiene mejor OPS (${format(homeOffense)}) vs lanzador ${awayPitcher?.throws ?? '?'}, AVG permitido ${format(awayPitcher?.avg)}, ERA equipo rival ${format(awayStats.era)}.`
+              : `${game.awayTeam} tiene mejor OPS (${format(awayOffense)}) vs lanzador ${homePitcher?.throws ?? '?'}, AVG permitido ${format(homePitcher?.avg)}, ERA equipo rival ${format(homeStats.era)}.`;
 
           newLiveScores[game.gamePk] = {
             home: live.home,
@@ -105,7 +113,7 @@ export default function Home() {
   return (
     <main className="p-6 max-w-3xl mx-auto">
       <h1 className="text-xl font-bold mb-4">
-        Predicciones MLB (solo OPS ofensivo + marcador en vivo)
+        Predicciones MLB (datos reales + marcador en vivo)
       </h1>
 
       <input

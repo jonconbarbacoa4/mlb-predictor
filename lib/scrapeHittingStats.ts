@@ -3,49 +3,45 @@ import fs from 'fs';
 import path from 'path';
 
 (async () => {
-  const url = 'https://baseballsavant.mlb.com/league?view=statcast&nav=hitting&season=2025';
-  const browser = await puppeteer.launch({ headless: false }); // usa false para inspección
+  console.log('🧽 Obteniendo estadísticas de bateo por equipo...');
+
+  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
 
-  console.log('🌐 Navegando a la página...');
-  await page.goto(url, { waitUntil: 'networkidle2', timeout: 0 });
+  await page.goto('https://baseballsavant.mlb.com/leaderboard/statcast?type=batter-team&year=2025', {
+    waitUntil: 'networkidle2',
+  });
 
-  console.log('📷 Capturando página completa...');
-  await page.screenshot({ path: 'debug_batting_full.png', fullPage: true });
-
-  console.log('⏳ Esperando que cargue la tabla de datos...');
-  await page.waitForSelector('table', { timeout: 60000 });
-
-  console.log('✅ Tabla detectada. Extrayendo datos...');
+  // Espera a que cargue la tabla
+  await page.waitForSelector('#savant-leaderboard-table', { timeout: 60000 });
 
   const data = await page.evaluate(() => {
-    const rows = Array.from(document.querySelectorAll('table tbody tr'));
+    const rows = Array.from(document.querySelectorAll('#savant-leaderboard-table tbody tr'));
     return rows.map(row => {
-      const cells = Array.from(row.querySelectorAll('td')).map(td => td.textContent?.trim() || '');
-      return cells;
+      const cells = row.querySelectorAll('td');
+      const teamName = cells[1]?.textContent?.trim() || '';
+      const avg = cells[5]?.textContent?.trim() || '';
+      const obp = cells[6]?.textContent?.trim() || '';
+      const slg = cells[7]?.textContent?.trim() || '';
+      const ops = cells[8]?.textContent?.trim() || '';
+
+      return {
+        teamName,
+        avg,
+        obp,
+        slg,
+        ops
+      };
     });
   });
 
-  const header = ['Team', 'AVG', 'OBP', 'SLG', 'OPS'];
-  const csvRows = [header.join(',')];
-
-  data.forEach(row => {
-    const [team, , , , avg, obp, slg, ops] = row;
-    if (team && avg && obp && slg && ops) {
-      csvRows.push([team, avg, obp, slg, ops].join(','));
-    }
-  });
-
-  const dirPath = path.join('public', 'data');
-  const filePath = path.join(dirPath, 'batting_teams_2025.csv');
-
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-
-  fs.writeFileSync(filePath, csvRows.join('\n'));
-
-  console.log(`📁 CSV guardado en: ${filePath}`);
-
   await browser.close();
+
+  const csv = ['teamName,avg,obp,slg,ops']
+    .concat(data.map(row => `${row.teamName},${row.avg},${row.obp},${row.slg},${row.ops}`))
+    .join('\n');
+
+  const filePath = path.resolve('public/data/hitting_teams_2025.csv');
+  fs.writeFileSync(filePath, csv, 'utf-8');
+  console.log(`✅ Archivo CSV generado: ${filePath}`);
 })();
