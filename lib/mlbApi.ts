@@ -54,3 +54,15 @@ export async function getTeamStats(teamId: number) {
   }
   return team;
 }
+export async function getLiveScore(gamePk: number) {
+  try {
+    const res = await fetch(`https://statsapi.mlb.com/api/v1/game/${gamePk}/linescore`);
+    const data = await res.json();
+    return {
+      home: data.teams?.home?.runs ?? 0,
+      away: data.teams?.away?.runs ?? 0,
+    };
+  } catch {
+    return { home: 0, away: 0 };
+  }
+}
