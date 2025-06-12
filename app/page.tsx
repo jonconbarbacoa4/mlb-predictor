@@ -3,11 +3,9 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import {
-  getGamesByDate,
   getTeamStats,
   getLiveScore,
-  getPredictedOffense,
-  getProbablePitchersByTeam
+  getPredictedOffense
 } from '@/lib/mlbApi';
 
 interface Game {
@@ -16,8 +14,6 @@ interface Game {
   homeTeamId: number;
   awayTeam: string;
   awayTeamId: number;
-  homePitcher: string | null;
-  awayPitcher: string | null;
 }
 
 export default function Home() {
@@ -30,69 +26,49 @@ export default function Home() {
   const [reasons, setReasons] = useState<Record<number, string>>({});
 
   useEffect(() => {
+    const dummyGames: Game[] = [
+      {
+        gamePk: 1,
+        homeTeam: 'Miami Marlins',
+        homeTeamId: 146,
+        awayTeam: 'Pittsburgh Pirates',
+        awayTeamId: 134
+      },
+      {
+        gamePk: 2,
+        homeTeam: 'Philadelphia Phillies',
+        homeTeamId: 143,
+        awayTeam: 'Chicago Cubs',
+        awayTeamId: 112
+      }
+    ];
+
     const fetchData = async () => {
       try {
-        const gameList = await getGamesByDate(selectedDate);
-        setGames(gameList);
-
-        const yesterday = new Date(selectedDate);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const prevDate = yesterday.toISOString().split('T')[0];
-        const prevGames = await getGamesByDate(prevDate);
-        const teamsPlayedYesterday = new Set<number>();
-        const teamResultsYesterday: Record<number, 'ganó' | 'perdió'> = {};
-
-        for (const g of prevGames) {
-          teamsPlayedYesterday.add(g.homeTeamId);
-          teamsPlayedYesterday.add(g.awayTeamId);
-
-          const score = await getLiveScore(g.gamePk);
-          if (score.home > score.away) {
-            teamResultsYesterday[g.homeTeamId] = 'ganó';
-            teamResultsYesterday[g.awayTeamId] = 'perdió';
-          } else if (score.away > score.home) {
-            teamResultsYesterday[g.awayTeamId] = 'ganó';
-            teamResultsYesterday[g.homeTeamId] = 'perdió';
-          }
-        }
-
-        const probablePitchersByTeam = await getProbablePitchersByTeam(selectedDate);
+        setGames(dummyGames);
 
         const newLiveScores: Record<number, { home: number; away: number }> = {};
         const newPredictions: Record<number, string> = {};
         const newReasons: Record<number, string> = {};
 
-        for (const game of gameList) {
+        for (const game of dummyGames) {
           const [homeStats, awayStats, live] = await Promise.all([
             getTeamStats(game.homeTeamId),
             getTeamStats(game.awayTeamId),
             getLiveScore(game.gamePk)
           ]);
 
-          const homePlayedYesterday = teamsPlayedYesterday.has(game.homeTeamId);
-          const awayPlayedYesterday = teamsPlayedYesterday.has(game.awayTeamId);
+          const prediction = homeStats.ops > awayStats.ops
+            ? `Gana ${game.homeTeam}`
+            : `Gana ${game.awayTeam}`;
 
-          const homeResult = teamResultsYesterday[game.homeTeamId];
-          const awayResult = teamResultsYesterday[game.awayTeamId];
-
-          const homePitcher = probablePitchersByTeam[game.homeTeam];
-          const awayPitcher = probablePitchersByTeam[game.awayTeam];
-
-          const homeOffense = await getPredictedOffense(game.homeTeamId, awayPitcher?.throws === 'L' ? 'L' : 'R');
-          const awayOffense = await getPredictedOffense(game.awayTeamId, homePitcher?.throws === 'L' ? 'L' : 'R');
-
-          const prediction = homeOffense > awayOffense ? `Gana ${game.homeTeam}` : `Gana ${game.awayTeam}`;
-
-          const format = (val: number | undefined) => (val ? val.toFixed(3) : 'N/A');
-
-          const reason =
-            homeOffense > awayOffense
-              ? `${game.homeTeam} tiene mejor OPS (${format(homeOffense)}) vs lanzador ${awayPitcher?.throws ?? '?'}, AVG permitido ${format(awayPitcher?.avg)}, ERA equipo rival ${format(awayStats.era)}.`
-              : `${game.awayTeam} tiene mejor OPS (${format(awayOffense)}) vs lanzador ${homePitcher?.throws ?? '?'}, AVG permitido ${format(homePitcher?.avg)}, ERA equipo rival ${format(homeStats.era)}.`;
+          const reason = homeStats.ops > awayStats.ops
+            ? `${game.homeTeam} tiene mejor OPS (${homeStats.ops.toFixed(3)}) que ${game.awayTeam} (${awayStats.ops.toFixed(3)})`
+            : `${game.awayTeam} tiene mejor OPS (${awayStats.ops.toFixed(3)}) que ${game.homeTeam} (${homeStats.ops.toFixed(3)})`;
 
           newLiveScores[game.gamePk] = {
             home: live.home,
-            away: live.away,
+            away: live.away
           };
 
           newPredictions[game.gamePk] = prediction;
@@ -113,7 +89,7 @@ export default function Home() {
   return (
     <main className="p-6 max-w-3xl mx-auto">
       <h1 className="text-xl font-bold mb-4">
-        Predicciones MLB (datos reales + marcador en vivo)
+        Predicciones MLB (solo OPS ofensivo + marcador en vivo)
       </h1>
 
       <input
