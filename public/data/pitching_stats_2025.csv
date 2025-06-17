@@ -1,31 +1,31 @@
 teamName,avg,obp,slg,ops
-Toronto Blue Jays,0.07809999999999999,0.444,0.395,0.697
-Athletics,0.07940000000000001,0.47,0.4,0.786
-Chicago White Sox,0.07890000000000001,0.446,0.391,0.749
-Los Angeles Angels,0.0792,0.463,0.397,0.76
-Arizona Diamondbacks,0.0792,0.45,0.398,0.767
-Baltimore Orioles,0.07909999999999999,0.458,0.398,0.725
-Colorado Rockies,0.0785,0.466,0.409,0.815
-St. Louis Cardinals,0.0792,0.448,0.397,0.807
-Cleveland Guardians,0.07970000000000001,0.445,0.392,0.699
-Chicago Cubs,0.07940000000000001,0.458,0.394,0.718
-Seattle Mariners,0.07859999999999999,0.448,0.392,0.75
-Miami Marlins,0.0798,0.438,0.396,0.747
-Los Angeles Dodgers,0.07970000000000001,0.455,0.4,0.722
-Texas Rangers,0.07840000000000001,0.479,0.393,0.659
-San Diego Padres,0.07809999999999999,0.467,0.388,0.662
-Atlanta Braves,0.0785,0.462,0.402,0.654
-Cincinnati Reds,0.0783,0.457,0.389,0.675
-Tampa Bay Rays,0.07959999999999999,0.442,0.387,0.729
-Minnesota Twins,0.0788,0.45,0.397,0.701
-Boston Red Sox,0.0782,0.454,0.394,0.766
-Washington Nationals,0.079,0.466,0.392,0.769
-Detroit Tigers,0.078,0.442,0.39,0.691
-New York Yankees,0.07790000000000001,0.44,0.389,0.616
-Kansas City Royals,0.0777,0.469,0.404,0.675
-Pittsburgh Pirates,0.0783,0.445,0.396,0.722
-Milwaukee Brewers,0.07859999999999999,0.468,0.396,0.677
-Houston Astros,0.07859999999999999,0.435,0.384,0.618
-Philadelphia Phillies,0.07809999999999999,0.442,0.39,0.685
-New York Mets,0.0792,0.438,0.389,0.707
-San Francisco Giants,0.078,0.484,0.39,0.653
+Toronto Blue Jays,116.7,78.3,444,735
+Athletics,117.5,79.4,470,827
+Los Angeles Angels,119.6,79.1,463,808
+Chicago White Sox,114.9,78.6,446,787
+Arizona Diamondbacks,117.4,79,450,798
+Baltimore Orioles,116.3,79.2,458,773
+Colorado Rockies,115.4,78.5,466,865
+Chicago Cubs,117.4,79.2,458,754
+Cincinnati Reds,116.2,78.3,457,712
+St. Louis Cardinals,117.9,79,448,845
+Miami Marlins,117.9,79.7,451,788
+Cleveland Guardians,118,79.5,445,725
+Seattle Mariners,120.4,78.7,448,784
+Los Angeles Dodgers,117.9,79.7,455,766
+Atlanta Braves,117.6,78.4,462,682
+Minnesota Twins,116.6,78.7,450,750
+Texas Rangers,114.8,78.5,479,699
+San Diego Padres,118.4,78.3,467,697
+Tampa Bay Rays,115.6,79.5,442,774
+Boston Red Sox,119,78,454,798
+Washington Nationals,115.8,79.2,466,836
+Detroit Tigers,115.2,77.8,442,737
+Kansas City Royals,117.9,78,469,722
+New York Yankees,115.5,78,440,669
+Pittsburgh Pirates,115.5,78.3,445,762
+Milwaukee Brewers,122.9,78.5,468,712
+Houston Astros,114.4,78.5,447,667
+New York Mets,114.7,79.2,438,759
+Philadelphia Phillies,116.4,78,442,724
+San Francisco Giants,116.8,78,484,689

@@ -1,51 +1,67 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
 import fs from 'fs';
 import path from 'path';
 import { createObjectCsvWriter } from 'csv-writer';
 
-async function scrapeTeamPitchingStats() {
+const OUTPUT_PATH = path.join(process.cwd(), 'public', 'data', 'pitching_stats_2025.csv');
+
+export async function scrapePitchingStats() {
   console.log('🧽 Obteniendo estadísticas de pitcheo por equipo...');
 
-  const url = 'https://baseballsavant.mlb.com/leaderboard/statcast?type=pitcher-team&year=2025&position=&team=&min=q&sort=barrels_per_pa&sortDir=desc';
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
 
-  const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
-  await page.goto(url, { waitUntil: 'domcontentloaded' });
-
-  await page.waitForSelector('#evLeaderboard table', { timeout: 60000 });
-
-  const data = await page.evaluate(() => {
-    const rows = Array.from(document.querySelectorAll('#evLeaderboard table tbody tr'));
-    return rows.map(row => {
-      const cells = row.querySelectorAll('td');
-      const teamName = cells[1]?.textContent?.trim() || '';
-      const avg = parseFloat(cells[7]?.textContent?.trim() || '0') / 1000;
-      const obp = parseFloat(cells[9]?.textContent?.trim() || '0') / 1000;
-      const slg = parseFloat(cells[10]?.textContent?.trim() || '0') / 1000;
-      const ops = parseFloat(cells[11]?.textContent?.trim() || '0') / 1000;
-
-      return { teamName, avg, obp, slg, ops };
-    }).filter(d => d.teamName !== '');
+  await page.goto('https://baseballsavant.mlb.com/leaderboard/statcast?type=pitcher-team&year=2025&position=&team=&min=q&sort=barrels_per_pa&sortDir=desc', {
+    waitUntil: 'domcontentloaded',
   });
 
-  const outputPath = path.join('public', 'data', 'pitching_stats_2025.csv');
-  const csvWriter = createObjectCsvWriter({
-    path: outputPath,
-    header: [
-      { id: 'teamName', title: 'teamName' },
-      { id: 'avg', title: 'avg' },
-      { id: 'obp', title: 'obp' },
-      { id: 'slg', title: 'slg' },
-      { id: 'ops', title: 'ops' },
-    ],
-  });
+  try {
+    await page.waitForSelector('#evLeaderboard', { timeout: 60000 });
 
-  await csvWriter.writeRecords(data);
-  console.log(`✅ CSV guardado en ${outputPath}`);
+    const tableHTML = await page.evaluate(() => {
+      const container = document.querySelector('#evLeaderboard');
+      return container ? container.outerHTML : '';
+    });
 
-  await browser.close();
+    fs.writeFileSync('debug_pitching_full.html', tableHTML);
+    console.log('✅ HTML completo guardado en debug_pitching_full.html');
+
+    const data = await page.evaluate(() => {
+      const rows = Array.from(document.querySelectorAll('#evLeaderboard table tbody tr'));
+      return rows.map(row => {
+        const cells = row.querySelectorAll('td');
+        return {
+          teamName: cells[1]?.textContent?.trim() ?? '',
+          avg: parseFloat(cells[5]?.textContent?.trim() ?? '0'),
+          obp: parseFloat(cells[7]?.textContent?.trim() ?? '0'),
+          slg: parseFloat(cells[9]?.textContent?.trim() ?? '0'),
+          ops: parseFloat(cells[11]?.textContent?.trim() ?? '0'),
+        };
+      }).filter(row => row.teamName); // elimina filas vacías
+    });
+
+    const csvWriter = createObjectCsvWriter({
+      path: OUTPUT_PATH,
+      header: [
+        { id: 'teamName', title: 'teamName' },
+        { id: 'avg', title: 'avg' },
+        { id: 'obp', title: 'obp' },
+        { id: 'slg', title: 'slg' },
+        { id: 'ops', title: 'ops' },
+      ],
+    });
+
+    await csvWriter.writeRecords(data);
+    console.log(`✅ CSV generado exitosamente en ${OUTPUT_PATH}`);
+  } catch (error) {
+    console.error('❌ Error en scrapePitchingStats:', error);
+  } finally {
+    await browser.close();
+  }
 }
 
-scrapeTeamPitchingStats().catch(error => {
-  console.error('❌ Error:', error);
-});
+scrapePitchingStats();
