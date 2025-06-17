@@ -1,0 +1,36 @@
+name: Actualizar stats y hacer deploy
+
+on:
+  schedule:
+    - cron: '0 15 * * *'  # Todos los días a las 9am CDMX (15 UTC)
+  workflow_dispatch:  # Permite ejecutarlo manualmente desde GitHub
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Instalar Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Ejecutar scripts de scraping
+        run: |
+          npx tsx lib/scrapePitchingStats.ts
+          npx tsx lib/scrapeBattingStats.ts
+          npx tsx lib/mergeStats.ts
+
+      - name: Commit y push de archivos actualizados
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add data/*.csv public/data/*.csv
+          git commit -m "🤖 Update daily MLB stats via GitHub Action" || echo "No changes"
+          git push

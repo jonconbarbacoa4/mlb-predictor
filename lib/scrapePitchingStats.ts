@@ -9,7 +9,7 @@ export async function scrapePitchingStats() {
   console.log('🧽 Obteniendo estadísticas de pitcheo por equipo...');
 
   const browser = await puppeteer.launch({
-    headless: 'new',
+    headless: const browser = await puppeteer.launch({ headless: true });
     executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
