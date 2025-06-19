@@ -1,31 +1,31 @@
 teamName,avg,obp,slg,ops
-Toronto Blue Jays,116.7,78.3,444,735
-Athletics,117.5,79.4,470,827
-Los Angeles Angels,119.6,79.1,463,808
-Chicago White Sox,114.9,78.6,446,787
-Arizona Diamondbacks,117.4,79,450,798
-Baltimore Orioles,116.3,79.2,458,773
-Colorado Rockies,115.4,78.5,466,865
-Chicago Cubs,117.4,79.2,458,754
-Cincinnati Reds,116.2,78.3,457,712
-St. Louis Cardinals,117.9,79,448,845
-Miami Marlins,117.9,79.7,451,788
-Cleveland Guardians,118,79.5,445,725
-Seattle Mariners,120.4,78.7,448,784
-Los Angeles Dodgers,117.9,79.7,455,766
-Atlanta Braves,117.6,78.4,462,682
-Minnesota Twins,116.6,78.7,450,750
-Texas Rangers,114.8,78.5,479,699
-San Diego Padres,118.4,78.3,467,697
-Tampa Bay Rays,115.6,79.5,442,774
-Boston Red Sox,119,78,454,798
-Washington Nationals,115.8,79.2,466,836
-Detroit Tigers,115.2,77.8,442,737
-Kansas City Royals,117.9,78,469,722
-New York Yankees,115.5,78,440,669
-Pittsburgh Pirates,115.5,78.3,445,762
-Milwaukee Brewers,122.9,78.5,468,712
-Houston Astros,114.4,78.5,447,667
-New York Mets,114.7,79.2,438,759
-Philadelphia Phillies,116.4,78,442,724
-San Francisco Giants,116.8,78,484,689
+Toronto Blue Jays,1817,15.9,34.3,116.7
+Arizona Diamondbacks,1923,11.8,35.9,117.4
+Athletics,2105,16.2,35.6,117.5
+Los Angeles Angels,1947,12.7,32.4,119.6
+Baltimore Orioles,1925,12.8,35,116.3
+Chicago White Sox,1918,14.9,35.3,114.9
+Colorado Rockies,2112,11.4,33.9,116.2
+Miami Marlins,1951,12.9,35.1,117.9
+St. Louis Cardinals,1988,10.1,32.6,117.9
+Seattle Mariners,1948,13.3,33.6,120.4
+Chicago Cubs,1916,14.8,34.8,117.4
+Cincinnati Reds,1881,16.7,34.6,116.2
+Cleveland Guardians,1836,14.6,34.9,118
+San Diego Padres,1798,15,34.3,118.4
+Los Angeles Dodgers,1888,13.1,35.1,117.9
+Texas Rangers,1833,12.5,33.7,114.8
+Minnesota Twins,1832,16,33.6,116.6
+Atlanta Braves,1727,11,33.8,117.6
+Washington Nationals,1968,14.3,33.9,115.8
+Tampa Bay Rays,1892,12.3,32.3,115.6
+Detroit Tigers,1859,12.6,34.2,115.2
+Boston Red Sox,1981,10.8,34.1,119
+Pittsburgh Pirates,1923,12.5,32.4,115.5
+Kansas City Royals,1895,13.1,33,117.9
+New York Yankees,1752,12.5,32.9,115.5
+Milwaukee Brewers,1884,15.1,34.9,122.9
+Houston Astros,1705,14.6,33.5,114.4
+New York Mets,1836,11.5,30.7,114.7
+Philadelphia Phillies,1876,12.8,34.1,116.4
+San Francisco Giants,1832,10.2,32.6,116.8

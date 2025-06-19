@@ -1,69 +1,56 @@
 import puppeteer from 'puppeteer';
-import cheerio from 'cheerio';
-import fs from 'fs';
+import { writeFileSync } from 'fs';
 import path from 'path';
-import { createObjectCsvWriter } from 'csv-writer';
+import * as cheerio from 'cheerio';
 
-const scrapePitchingStats = async () => {
+async function scrapePitchingStats() {
   console.log('🧽 Obteniendo estadísticas de pitcheo por equipo...');
+
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
 
   const url = 'https://baseballsavant.mlb.com/leaderboard/statcast?type=pitcher-team&year=2025&position=&team=&min=q&sort=barrels_per_pa&sortDir=desc';
 
-  const browser = await puppeteer.launch({
-    headless: 'new',
-  });
+  await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-  const page = await browser.newPage();
-  await page.goto(url, { waitUntil: 'networkidle2' });
+  // Espera a que la tabla esté cargada
+  await page.waitForSelector('#evLeaderboard table tbody tr', { timeout: 60000 });
 
-  await page.waitForTimeout(5000); // tiempo extra por si tarda en cargar
+  // Extrae el HTML de la tabla
+  const html = await page.content();
+  writeFileSync('debug_pitching_full.html', html); // útil para debug
 
-  const content = await page.content();
-  fs.writeFileSync('debug_pitching_full.html', content);
-  const $ = cheerio.load(content);
+  const $ = cheerio.load(html);
+  const rows = $('#evLeaderboard table tbody tr');
 
-  const table = $('#leaderboard-wrapper table');
-  if (!table.length) {
-    console.error('❌ Tabla no encontrada');
-    await browser.close();
-    return;
-  }
-
-  const rows = table.find('tbody tr');
   const data: { teamName: string; avg: number; obp: number; slg: number; ops: number }[] = [];
 
-  rows.each((_, row) => {
-    const cells = $(row).find('td');
-    const teamName = $(cells[1]).text().trim();
-    const avg = parseFloat($(cells[5]).text().trim()) || 0;
-    const obp = parseFloat($(cells[6]).text().trim()) || 0;
-    const slg = parseFloat($(cells[7]).text().trim()) || 0;
-    const ops = parseFloat($(cells[8]).text().trim()) || 0;
+  rows.each((i, el) => {
+    const cols = $(el).find('td');
+
+    const teamName = $(cols[1]).text().trim();
+    const avg = parseFloat($(cols[2]).text()) || 0;
+    const obp = parseFloat($(cols[3]).text()) || 0;
+    const slg = parseFloat($(cols[4]).text()) || 0;
+    const ops = parseFloat($(cols[5]).text()) || 0;
 
     if (teamName) {
       data.push({ teamName, avg, obp, slg, ops });
     }
   });
 
-  const outputPath = path.join(__dirname, '../public/data/pitching_stats_2025.csv');
+  const csvPath = path.resolve('public/data/pitching_stats_2025.csv');
+  const header = 'teamName,avg,obp,slg,ops\n';
+  const rowsText = data.map(row =>
+    `${row.teamName},${row.avg},${row.obp},${row.slg},${row.ops}`
+  );
 
-  const csvWriter = createObjectCsvWriter({
-    path: outputPath,
-    header: [
-      { id: 'teamName', title: 'teamName' },
-      { id: 'avg', title: 'avg' },
-      { id: 'obp', title: 'obp' },
-      { id: 'slg', title: 'slg' },
-      { id: 'ops', title: 'ops' },
-    ],
-  });
-
-  await csvWriter.writeRecords(data);
-  console.log(`✅ CSV generado exitosamente en ${outputPath}`);
+  writeFileSync(csvPath, header + rowsText.join('\n'), 'utf-8');
+  console.log(`✅ CSV generado exitosamente en ${csvPath}`);
 
   await browser.close();
-};
+}
 
-scrapePitchingStats().catch((error) => {
-  console.error('❌ Error en scrapePitchingStats:', error);
+scrapePitchingStats().catch((err) => {
+  console.error('❌ Error en scrapePitchingStats:', err);
 });
