@@ -1,31 +1,31 @@
-teamId,teamName,avg_bat,obp_bat,slg_bat,ops_bat,avg_pit,obp_pit,slg_pit,ops_pit
-147,New York Yankees,94.7,469,390,774,0.0779,0.44,0.389,0.616
-108,Los Angeles Angels,94.2,484,400,669,0.0792,0.463,0.397,0.76
-121,New York Mets,94.6,456,396,815,0.0792,0.438,0.389,0.707
-112,Chicago Cubs,93.3,445,393,742,0.0794,0.458,0.394,0.718
-119,Los Angeles Dodgers,93.8,448,399,788,0.0797,0.455,0.4,0.722
-111,Boston Red Sox,94.2,442,391,835,0.0782,0.454,0.394,0.766
-116,Detroit Tigers,93.3,450,390,695,0.078,0.442,0.39,0.691
-109,Arizona Diamondbacks,93.8,466,403,774,0.0792,0.45,0.398,0.767
-136,Seattle Mariners,93.0,450,391,725,0.0785999999999999,0.448,0.392,0.75
-141,Toronto Blue Jays,93.6,435,394,793,0.0780999999999999,0.444,0.395,0.697
-140,Texas Rangers,93.7,442,392,689,0.0784,0.479,0.393,0.659
-144,Atlanta Braves,93.9,467,402,739,0.0785,0.462,0.402,0.654
-110,Baltimore Orioles,93.7,455,393,709,0.0790999999999999,0.458,0.398,0.725
-142,Minnesota Twins,93.4,479,397,726,0.0788,0.45,0.397,0.701
-143,Philadelphia Phillies,93.0,466,397,759,0.0780999999999999,0.442,0.39,0.685
-120,Washington Nationals,93.8,448,399,714,0.079,0.466,0.392,0.769
-115,Colorado Rockies,93.3,457,404,645,0.0785,0.466,0.409,0.815
-134,Pittsburgh Pirates,93.4,463,397,685,0.0783,0.445,0.396,0.722
-133,Athletics,92.7,440,397,716,0.0794,0.47,0.4,0.786
-117,Houston Astros,92.4,436,385,689,0.0785999999999999,0.435,0.384,0.618
-146,Miami Marlins,93.2,427,397,693,0.0798,0.438,0.396,0.747
-138,St. Louis Cardinals,93.0,435,396,736,0.0792,0.448,0.397,0.807
-137,San Francisco Giants,92.4,452,388,615,0.078,0.484,0.39,0.653
-118,Kansas City Royals,92.8,448,399,727,0.0777,0.469,0.404,0.675
-145,Chicago White Sox,93.7,425,386,680,0.0789,0.446,0.391,0.749
-139,Tampa Bay Rays,93.2,438,385,693,0.0795999999999999,0.442,0.387,0.729
-113,Cincinnati Reds,92.9,451,397,654,0.0783,0.457,0.389,0.675
-135,San Diego Padres,93.0,439,392,654,0.0780999999999999,0.467,0.388,0.662
-114,Cleveland Guardians,92.8,450,387,615,0.0797,0.445,0.392,0.699
-158,Milwaukee Brewers,93.1,465,398,653,0.0785999999999999,0.468,0.396,0.677
+teamName,avg,obp,slg,ops,era,whip,k9,bb9
+New York Yankees,94.7,469,390,774,,,,
+Los Angeles Angels,94.2,484,400,669,,,,
+New York Mets,94.6,456,396,815,,,,
+Chicago Cubs,93.3,445,393,742,,,,
+Los Angeles Dodgers,93.8,448,399,788,,,,
+Boston Red Sox,94.2,442,391,835,,,,
+Detroit Tigers,93.3,450,390,695,,,,
+Arizona Diamondbacks,93.8,466,403,774,,,,
+Seattle Mariners,93.0,450,391,725,,,,
+Toronto Blue Jays,93.6,435,394,793,,,,
+Texas Rangers,93.7,442,392,689,,,,
+Atlanta Braves,93.9,467,402,739,,,,
+Baltimore Orioles,93.7,455,393,709,,,,
+Minnesota Twins,93.4,479,397,726,,,,
+Philadelphia Phillies,93.0,466,397,759,,,,
+Washington Nationals,93.8,448,399,714,,,,
+Colorado Rockies,93.3,457,404,645,,,,
+Pittsburgh Pirates,93.4,463,397,685,,,,
+Athletics,92.7,440,397,716,,,,
+Houston Astros,92.4,436,385,689,,,,
+Miami Marlins,93.2,427,397,693,,,,
+St. Louis Cardinals,93.0,435,396,736,,,,
+San Francisco Giants,92.4,452,388,615,,,,
+Kansas City Royals,92.8,448,399,727,,,,
+Chicago White Sox,93.7,425,386,680,,,,
+Tampa Bay Rays,93.2,438,385,693,,,,
+Cincinnati Reds,92.9,451,397,654,,,,
+San Diego Padres,93.0,439,392,654,,,,
+Cleveland Guardians,92.8,450,387,615,,,,
+Milwaukee Brewers,93.1,465,398,653,,,,
